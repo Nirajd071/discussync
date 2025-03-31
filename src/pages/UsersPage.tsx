@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Search, Users as UsersIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import MainLayout from '@/components/Layout/MainLayout';
 import UserAvatar from '@/components/UserAvatar';
 import { api } from '@/lib/api';
