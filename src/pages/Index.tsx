@@ -6,7 +6,8 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    navigate("/");
+    // Redirect to the users page instead of "/"
+    navigate("/users");
   }, [navigate]);
 
   return null;
