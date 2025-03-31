@@ -1,11 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
-  PlusCircle, 
   Search,
   Filter,
   Tag as TagIcon,
@@ -21,7 +19,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -137,11 +134,7 @@ const DiscussionsPage = () => {
     <MainLayout>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl md:text-3xl font-bold">Discussions</h1>
-        <Button asChild>
-          <Link to="/discussions/new">
-            <PlusCircle className="mr-2 h-4 w-4" /> New Discussion
-          </Link>
-        </Button>
+        {/* Removed duplicate New Discussion button from here */}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -291,7 +284,7 @@ const DiscussionsPage = () => {
               </p>
               <Button asChild>
                 <Link to="/discussions/new">
-                  <PlusCircle className="mr-2 h-4 w-4" /> Start a new discussion
+                  Start a new discussion
                 </Link>
               </Button>
             </div>
