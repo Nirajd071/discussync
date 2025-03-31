@@ -73,25 +73,26 @@ const Header: React.FC = () => {
                 </Button>
               </Link>
 
-              <div className="relative">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  aria-label="Notifications"
-                  onClick={() => setNotificationsOpen(!notificationsOpen)}
-                >
-                  <Bell className="h-4 w-4" />
-                  {unreadCount > 0 && (
-                    <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-forum-highlight text-white">
-                      {unreadCount}
-                    </Badge>
-                  )}
-                </Button>
-                <NotificationDropdown 
-                  open={notificationsOpen} 
-                  onOpenChange={setNotificationsOpen} 
-                />
-              </div>
+              {/* Fixed notification button that doesn't trigger React.Children.only error */}
+              <NotificationDropdown 
+                open={notificationsOpen} 
+                onOpenChange={setNotificationsOpen}
+                trigger={
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label="Notifications"
+                    className="relative"
+                  >
+                    <Bell className="h-4 w-4" />
+                    {unreadCount > 0 && (
+                      <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-forum-highlight text-white">
+                        {unreadCount}
+                      </Badge>
+                    )}
+                  </Button>
+                }
+              />
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
