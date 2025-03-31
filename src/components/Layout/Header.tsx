@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -73,7 +72,6 @@ const Header: React.FC = () => {
                 </Button>
               </Link>
 
-              {/* Fixed notification button that doesn't trigger React.Children.only error */}
               <NotificationDropdown 
                 open={notificationsOpen} 
                 onOpenChange={setNotificationsOpen}
@@ -148,7 +146,6 @@ const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {isMobile && mobileMenuOpen && (
         <div className="md:hidden border-t border-border/40 py-4 px-6 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <nav className="flex flex-col space-y-4">

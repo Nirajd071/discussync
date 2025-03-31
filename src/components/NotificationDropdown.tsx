@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Bell, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { useNotifications } from '@/contexts/NotificationContext';
 
 interface NotificationDropdownProps {
@@ -47,14 +47,14 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
               {notifications.map((notification) => (
                 <Link 
                   key={notification.id} 
-                  to={notification.link} 
-                  className={`block p-3 rounded-md text-sm ${notification.read ? 'bg-background' : 'bg-muted'}`}
+                  to={notification.link || '#'} 
+                  className={`block p-3 rounded-md text-sm ${notification.isRead ? 'bg-background' : 'bg-muted'}`}
                   onClick={() => onOpenChange(false)}
                 >
-                  <div className="font-medium">{notification.title}</div>
+                  <div className="font-medium">{notification.type}</div>
                   <div className="text-muted-foreground">{notification.message}</div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    {notification.timestamp}
+                    {notification.createdAt.toLocaleDateString()}
                   </div>
                 </Link>
               ))}
