@@ -1,36 +1,35 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 224 71% 4%;
+    --background: 250 20% 98%;
+    --foreground: 250 71% 4%;
 
     --card: 0 0% 100%;
-    --card-foreground: 224 71% 4%;
+    --card-foreground: 250 71% 4%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 224 71% 4%;
+    --popover-foreground: 250 71% 4%;
 
-    --primary: 255 70% 55%;
+    --primary: 265 89% 65%;
     --primary-foreground: 210 20% 98%;
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 224 71% 4%;
+    --secondary: 250 14% 96%;
+    --secondary-foreground: 250 71% 4%;
 
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 8% 56%;
+    --muted: 250 14% 96%;
+    --muted-foreground: 250 8% 56%;
 
-    --accent: 173 41% 50%;
+    --accent: 262 83% 58%;
     --accent-foreground: 210 20% 98%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 20% 98%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
+    --border: 250 13% 91%;
+    --input: 250 13% 91%;
     --ring: 262 83% 58%;
 
     --radius: 0.5rem;
@@ -46,39 +45,39 @@
   }
 
   .dark {
-    --background: 224 71% 4%;
+    --background: 250 30% 4%;
     --foreground: 210 20% 98%;
 
-    --card: 224 71% 4%;
+    --card: 250 30% 6%;
     --card-foreground: 210 20% 98%;
 
-    --popover: 224 71% 4%;
+    --popover: 250 30% 6%;
     --popover-foreground: 210 20% 98%;
 
-    --primary: 263 70% 50%;
+    --primary: 263 85% 60%;
     --primary-foreground: 210 20% 98%;
 
-    --secondary: 215 27% 16%;
+    --secondary: 250 27% 16%;
     --secondary-foreground: 210 20% 98%;
 
-    --muted: 215 27% 16%;
+    --muted: 250 27% 16%;
     --muted-foreground: 217 10% 64%;
 
-    --accent: 173 41% 40%;
+    --accent: 262 83% 58%;
     --accent-foreground: 210 20% 98%;
 
     --destructive: 0 62% 30%;
     --destructive-foreground: 210 20% 98%;
 
-    --border: 215 27% 16%;
-    --input: 215 27% 16%;
+    --border: 250 27% 16%;
+    --input: 250 27% 16%;
     --ring: 263 70% 50%;
 
-    --sidebar-background: 240 5.9% 10%;
+    --sidebar-background: 250 30% 6%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 263 70% 50%;
+    --sidebar-primary: 263 85% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent: 250 16% 20%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 263 70% 50%;
@@ -91,14 +90,14 @@
   }
 
   body {
-    @apply bg-forum-background text-forum-dark;
+    @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
 @layer components {
   .forum-gradient {
-    @apply bg-gradient-to-r from-forum-primary to-forum-secondary;
+    @apply bg-gradient-to-r from-violet-600 to-indigo-600;
   }
   
   .forum-card {
@@ -108,14 +107,14 @@
   .forum-button-primary {
     @apply inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors 
     focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none 
-    disabled:opacity-50 bg-gradient-to-r from-forum-primary to-forum-secondary text-white shadow hover:shadow-lg hover:opacity-90 
+    disabled:opacity-50 bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow hover:shadow-lg hover:opacity-90 
     h-9 px-4 py-2;
   }
   
   .forum-button-secondary {
     @apply inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors 
     focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none 
-    disabled:opacity-50 bg-white text-forum-dark border border-gray-200 shadow-sm hover:bg-gray-50 
+    disabled:opacity-50 bg-white text-violet-800 border border-gray-200 shadow-sm hover:bg-gray-50 
     h-9 px-4 py-2;
   }
 }
@@ -142,6 +141,24 @@
   }
 }
 
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 rgba(139, 92, 246, 0);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+  }
+}
+
 @layer utilities {
   .animate-fade-in {
     animation: fade-in 0.6s ease-out forwards;
@@ -149,5 +166,13 @@
   
   .animate-scale-in {
     animation: scale-in 0.5s ease-out forwards;
+  }
+  
+  .animate-float {
+    animation: float 4s ease-in-out infinite;
+  }
+  
+  .animate-pulse-glow {
+    animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 }
