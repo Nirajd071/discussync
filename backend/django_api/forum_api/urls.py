@@ -7,12 +7,17 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
+from django.http import JsonResponse
+
+def health_check(request):
+    return JsonResponse({"status": "ok", "message": "Backend is running"})
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('users.urls')),
     path('api/discussions/', include('discussions.urls')),
     path('api/notifications/', include('notifications.urls')),
+    path('health/', health_check, name='health_check'),
     
     # API documentation
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
@@ -23,3 +28,4 @@ urlpatterns = [
 # Serve media files in development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
