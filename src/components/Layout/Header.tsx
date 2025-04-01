@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import NotificationDropdown from '@/components/NotificationDropdown';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-// Import new components
+// Import components
 import Logo from './Logo';
 import Navigation from './Navigation';
 import UserMenu from './UserMenu';
@@ -23,8 +23,8 @@ const Header: React.FC = () => {
   const [notificationsOpen, setNotificationsOpen] = React.useState(false);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm">
+      <div className="container max-w-7xl mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-4">
           <Logo />
           {!isMobile && <Navigation />}
@@ -36,7 +36,7 @@ const Header: React.FC = () => {
           {isAuthenticated ? (
             <>
               <Link to="/discussions/new">
-                <Button size="sm" className="hidden md:flex bg-gradient-to-r from-red-700 to-red-500 hover:from-red-800 hover:to-red-600">
+                <Button size="sm" className="hidden md:flex bg-primary hover:bg-primary/90 text-primary-foreground">
                   <PlusCircle className="mr-2 h-4 w-4" /> New Discussion
                 </Button>
               </Link>
@@ -53,7 +53,7 @@ const Header: React.FC = () => {
                   >
                     <Bell className="h-4 w-4" />
                     {unreadCount > 0 && (
-                      <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white">
+                      <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-primary text-primary-foreground">
                         {unreadCount}
                       </Badge>
                     )}
@@ -68,7 +68,7 @@ const Header: React.FC = () => {
               <Button variant="ghost" asChild className="hidden md:inline-flex">
                 <Link to="/login">Log in</Link>
               </Button>
-              <Button className="hidden md:inline-flex bg-gradient-to-r from-red-700 to-red-500 hover:from-red-800 hover:to-red-600" asChild>
+              <Button className="hidden md:inline-flex bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
                 <Link to="/register">Sign up</Link>
               </Button>
             </>

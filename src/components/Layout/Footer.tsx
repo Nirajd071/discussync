@@ -2,16 +2,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { MessageSquare, Github, Twitter, Linkedin } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 const Footer: React.FC = () => {
   return (
-    <footer className="border-t border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-8">
-      <div className="container">
+    <footer className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-8">
+      <div className="container max-w-7xl mx-auto px-4 sm:px-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-2">
-              <MessageSquare className="h-6 w-6 text-red-500" />
-              <span className="text-xl font-bold bg-gradient-to-r from-red-600 to-red-500 bg-clip-text text-transparent">
+              <MessageSquare className="h-6 w-6 text-primary" />
+              <span className="text-xl font-bold">
                 DiscuSync
               </span>
             </Link>
@@ -19,15 +20,15 @@ const Footer: React.FC = () => {
               A platform for sharing projects and fostering meaningful discussions among developers.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-muted-foreground hover:text-foreground">
+              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
                 <Github className="h-5 w-5" />
                 <span className="sr-only">GitHub</span>
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground">
+              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
                 <Twitter className="h-5 w-5" />
                 <span className="sr-only">Twitter</span>
               </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground">
+              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
                 <Linkedin className="h-5 w-5" />
                 <span className="sr-only">LinkedIn</span>
               </a>
@@ -38,27 +39,27 @@ const Footer: React.FC = () => {
             <h3 className="text-sm font-medium mb-4">Platform</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/discussions" className="text-muted-foreground hover:text-foreground">
+                <Link to="/discussions" className="text-muted-foreground hover:text-foreground transition-colors">
                   Discussions
                 </Link>
               </li>
               <li>
-                <Link to="/projects" className="text-muted-foreground hover:text-foreground">
+                <Link to="/projects" className="text-muted-foreground hover:text-foreground transition-colors">
                   Projects
                 </Link>
               </li>
               <li>
-                <Link to="/tags" className="text-muted-foreground hover:text-foreground">
+                <Link to="/tags" className="text-muted-foreground hover:text-foreground transition-colors">
                   Tags
                 </Link>
               </li>
               <li>
-                <Link to="/users" className="text-muted-foreground hover:text-foreground">
+                <Link to="/users" className="text-muted-foreground hover:text-foreground transition-colors">
                   Users
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="text-muted-foreground hover:text-foreground">
+                <Link to="/about" className="text-muted-foreground hover:text-foreground transition-colors">
                   About
                 </Link>
               </li>
@@ -69,22 +70,22 @@ const Footer: React.FC = () => {
             <h3 className="text-sm font-medium mb-4">Resources</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/faq" className="text-muted-foreground hover:text-foreground">
+                <Link to="/faq" className="text-muted-foreground hover:text-foreground transition-colors">
                   FAQ
                 </Link>
               </li>
               <li>
-                <Link to="/guidelines" className="text-muted-foreground hover:text-foreground">
+                <Link to="/guidelines" className="text-muted-foreground hover:text-foreground transition-colors">
                   Community Guidelines
                 </Link>
               </li>
               <li>
-                <Link to="/terms" className="text-muted-foreground hover:text-foreground">
+                <Link to="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link to="/privacy" className="text-muted-foreground hover:text-foreground">
+                <Link to="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
                   Privacy Policy
                 </Link>
               </li>
@@ -92,11 +93,11 @@ const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-border/40">
-          <p className="text-xs text-center text-muted-foreground">
-            © {new Date().getFullYear()} DiscuSync. All rights reserved.
-          </p>
-        </div>
+        <Separator className="my-6" />
+
+        <p className="text-xs text-center text-muted-foreground">
+          © {new Date().getFullYear()} DiscuSync. All rights reserved.
+        </p>
       </div>
     </footer>
   );
