@@ -24,17 +24,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Check if user is already logged in
     const checkAuth = async () => {
       try {
-        const storedUser = localStorage.getItem('forum_user');
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
-        } else {
-          // For demo purposes, automatically log in as the current user
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+          // Attempt to get current user with the token
           const currentUser = await api.getCurrentUser();
           setUser(currentUser);
-          localStorage.setItem('forum_user', JSON.stringify(currentUser));
         }
       } catch (error) {
         console.error('Authentication check failed:', error);
+        // Clear invalid token
+        localStorage.removeItem('auth_token');
       } finally {
         setIsLoading(false);
       }
@@ -48,7 +47,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(true);
       const loggedInUser = await api.login(email, password);
       setUser(loggedInUser);
-      localStorage.setItem('forum_user', JSON.stringify(loggedInUser));
       toast({
         title: 'Welcome back!',
         description: `You're now logged in as ${loggedInUser.name}`,
@@ -70,7 +68,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(true);
       const newUser = await api.register(userData);
       setUser(newUser);
-      localStorage.setItem('forum_user', JSON.stringify(newUser));
       toast({
         title: 'Registration successful',
         description: `Welcome to the forum, ${newUser.name}!`,
@@ -89,7 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('forum_user');
+    localStorage.removeItem('auth_token');
     toast({
       title: 'Logged out',
       description: 'You have been successfully logged out.',

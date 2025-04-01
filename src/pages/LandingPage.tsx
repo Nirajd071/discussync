@@ -6,6 +6,7 @@ import FeaturesSection from '@/components/Landing/FeaturesSection';
 import HowItWorksSection from '@/components/Landing/HowItWorksSection';
 import PopularTagsSection from '@/components/Landing/PopularTagsSection';
 import CtaSection from '@/components/Landing/CtaSection';
+import BackendIntegrationSection from '@/components/Landing/BackendIntegrationSection';
 
 const LandingPage = () => {
   return (
@@ -13,6 +14,7 @@ const LandingPage = () => {
       <HeroSection />
       <FeaturesSection />
       <HowItWorksSection />
+      <BackendIntegrationSection />
       <PopularTagsSection />
       <CtaSection />
     </MainLayout>
