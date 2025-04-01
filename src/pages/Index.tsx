@@ -1,8 +1,9 @@
 
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
+import MainLayout from "@/components/Layout/MainLayout";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ const Index = () => {
     const redirectTimer = setTimeout(() => {
       // Redirect to login if not authenticated, otherwise to users page
       if (isAuthenticated) {
-        navigate("/users");
+        navigate("/discussions");
       } else {
         navigate("/login");
       }
@@ -23,12 +24,14 @@ const Index = () => {
   }, [navigate, isAuthenticated]);
 
   return (
-    <div className="h-screen w-full flex items-center justify-center bg-gradient-to-b from-background to-primary/10">
-      <div className="flex flex-col items-center justify-center">
-        <Loader2 className="h-16 w-16 text-primary animate-spin mb-4" />
-        <p className="text-lg text-muted-foreground animate-pulse">Redirecting...</p>
+    <MainLayout>
+      <div className="h-[60vh] w-full flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center">
+          <Loader2 className="h-16 w-16 text-primary animate-spin mb-4" />
+          <p className="text-lg text-muted-foreground animate-pulse">Redirecting...</p>
+        </div>
       </div>
-    </div>
+    </MainLayout>
   );
 };
 
