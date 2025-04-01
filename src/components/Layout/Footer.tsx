@@ -16,7 +16,7 @@ const Footer: React.FC = () => {
               </span>
             </Link>
             <p className="text-sm text-muted-foreground">
-              A place for meaningful discussions and collaboration.
+              A platform for sharing projects and fostering meaningful discussions among developers.
             </p>
             <div className="flex space-x-4">
               <a href="#" className="text-muted-foreground hover:text-foreground">
@@ -69,23 +69,8 @@ const Footer: React.FC = () => {
             <h3 className="text-sm font-medium mb-4">Resources</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/blog" className="text-muted-foreground hover:text-foreground">
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link to="/help" className="text-muted-foreground hover:text-foreground">
-                  Help Center
-                </Link>
-              </li>
-              <li>
-                <Link to="/api" className="text-muted-foreground hover:text-foreground">
-                  API
-                </Link>
-              </li>
-              <li>
-                <Link to="/pricing" className="text-muted-foreground hover:text-foreground">
-                  Pricing
+                <Link to="/faq" className="text-muted-foreground hover:text-foreground">
+                  FAQ
                 </Link>
               </li>
               <li>

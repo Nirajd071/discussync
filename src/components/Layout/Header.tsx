@@ -15,7 +15,10 @@ import {
   MessageSquare,
   PlusCircle,
   Moon,
-  Sun
+  Sun,
+  FileUp,
+  Users,
+  Tag
 } from 'lucide-react';
 import { 
   DropdownMenu, 
@@ -74,13 +77,20 @@ const Header: React.FC = () => {
 
           {!isMobile && (
             <nav className="hidden md:flex items-center gap-6 text-sm">
-              <Link to="/discussions" className="text-foreground/70 hover:text-foreground">
+              <Link to="/discussions" className="text-foreground/70 hover:text-foreground flex items-center gap-1">
+                <MessageSquare className="h-4 w-4" />
                 Discussions
               </Link>
-              <Link to="/tags" className="text-foreground/70 hover:text-foreground">
+              <Link to="/projects" className="text-foreground/70 hover:text-foreground flex items-center gap-1">
+                <FileUp className="h-4 w-4" />
+                Projects
+              </Link>
+              <Link to="/tags" className="text-foreground/70 hover:text-foreground flex items-center gap-1">
+                <Tag className="h-4 w-4" />
                 Tags
               </Link>
-              <Link to="/users" className="text-foreground/70 hover:text-foreground">
+              <Link to="/users" className="text-foreground/70 hover:text-foreground flex items-center gap-1">
+                <Users className="h-4 w-4" />
                 Users
               </Link>
             </nav>
@@ -183,17 +193,25 @@ const Header: React.FC = () => {
       {isMobile && mobileMenuOpen && (
         <div className="md:hidden border-t border-border/40 py-4 px-6 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <nav className="flex flex-col space-y-4">
-            <Link to="/discussions" className="text-sm font-medium" onClick={() => setMobileMenuOpen(false)}>
+            <Link to="/discussions" className="text-sm font-medium flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+              <MessageSquare className="h-4 w-4" />
               Discussions
             </Link>
-            <Link to="/tags" className="text-sm font-medium" onClick={() => setMobileMenuOpen(false)}>
+            <Link to="/projects" className="text-sm font-medium flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+              <FileUp className="h-4 w-4" />
+              Projects
+            </Link>
+            <Link to="/tags" className="text-sm font-medium flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+              <Tag className="h-4 w-4" />
               Tags
             </Link>
-            <Link to="/users" className="text-sm font-medium" onClick={() => setMobileMenuOpen(false)}>
+            <Link to="/users" className="text-sm font-medium flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+              <Users className="h-4 w-4" />
               Users
             </Link>
             {isAuthenticated ? (
-              <Link to="/discussions/new" className="text-sm font-medium" onClick={() => setMobileMenuOpen(false)}>
+              <Link to="/discussions/new" className="text-sm font-medium flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                <PlusCircle className="h-4 w-4" />
                 New Discussion
               </Link>
             ) : (
