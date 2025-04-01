@@ -32,7 +32,7 @@ function AnimatedParticles({ count = 3000 }) {
     <Points ref={pointsRef} positions={points} stride={3} frustumCulled={false}>
       <PointMaterial
         transparent
-        color="#8B5CF6"
+        color="#ea384c"
         size={0.2}
         sizeAttenuation={true}
         depthWrite={false}
@@ -44,7 +44,7 @@ function AnimatedParticles({ count = 3000 }) {
 
 const ThreeJsBackground: React.FC = () => {
   return (
-    <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black via-violet-950/60 to-black">
+    <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black via-red-950/30 to-black">
       <Canvas camera={{ position: [0, 0, 15], fov: 60 }}>
         <ambientLight intensity={0.5} />
         <pointLight position={[10, 10, 10]} intensity={1} />

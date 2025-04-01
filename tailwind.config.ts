@@ -64,12 +64,12 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				forum: {
-					primary: '#6344DD',
-					secondary: '#3E63DD',
-					accent: '#4DB5B3',
-					highlight: '#FF7D50',
+					primary: '#ea384c',
+					secondary: '#dc2626',
+					accent: '#b91c1c',
+					highlight: '#991b1b',
 					background: '#F8F9FA',
-					dark: '#333333',
+					dark: '#0F0F0F',
 					light: '#FFFFFF',
 					muted: '#94A3B8'
 				}

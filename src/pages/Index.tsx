@@ -22,9 +22,9 @@ const Index = () => {
   }, [navigate, isAuthenticated]);
 
   return (
-    <div className="h-screen w-full flex items-center justify-center bg-gradient-to-b from-violet-900 to-black">
+    <div className="h-screen w-full flex items-center justify-center bg-gradient-to-b from-black to-red-950">
       <div className="animate-pulse-glow">
-        <div className="h-16 w-16 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 animate-spin"></div>
+        <div className="h-16 w-16 rounded-full bg-gradient-to-r from-red-600 to-red-400 animate-spin"></div>
       </div>
     </div>
   );

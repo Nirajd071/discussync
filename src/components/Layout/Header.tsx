@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotifications } from '@/contexts/NotificationContext';
@@ -12,7 +13,9 @@ import {
   LogOut, 
   User as UserIcon,
   MessageSquare,
-  PlusCircle
+  PlusCircle,
+  Moon,
+  Sun
 } from 'lucide-react';
 import { 
   DropdownMenu, 
@@ -25,6 +28,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import NotificationDropdown from '@/components/NotificationDropdown';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Switch } from '@/components/ui/switch';
 
 const Header: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -32,9 +36,29 @@ const Header: React.FC = () => {
   const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    // Check if user preference is saved in local storage
+    const savedMode = localStorage.getItem('color-mode');
+    return savedMode === 'dark' || (!savedMode && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  });
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  useEffect(() => {
+    // Apply dark mode class to document
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('color-mode', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('color-mode', 'light');
+    }
+  }, [isDarkMode]);
+
+  const toggleColorMode = () => {
+    setIsDarkMode(!isDarkMode);
   };
 
   return (
@@ -42,9 +66,9 @@ const Header: React.FC = () => {
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-4">
           <Link to="/" className="flex items-center gap-2">
-            <MessageSquare className="h-6 w-6 text-forum-primary" />
-            <span className="text-xl font-bold bg-gradient-to-r from-forum-primary to-forum-secondary bg-clip-text text-transparent">
-              ChatterBox
+            <MessageSquare className="h-6 w-6 text-red-500" />
+            <span className="text-xl font-bold bg-gradient-to-r from-red-600 to-red-500 bg-clip-text text-transparent">
+              DiscuSync
             </span>
           </Link>
 
@@ -64,10 +88,20 @@ const Header: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 mr-2">
+            <Sun className="h-4 w-4 dark:text-gray-400 text-yellow-500" />
+            <Switch
+              checked={isDarkMode}
+              onCheckedChange={toggleColorMode}
+              className="data-[state=checked]:bg-red-600"
+            />
+            <Moon className="h-4 w-4 dark:text-white text-gray-400" />
+          </div>
+
           {isAuthenticated ? (
             <>
               <Link to="/discussions/new">
-                <Button size="sm" className="hidden md:flex">
+                <Button size="sm" className="hidden md:flex bg-gradient-to-r from-red-700 to-red-500 hover:from-red-800 hover:to-red-600">
                   <PlusCircle className="mr-2 h-4 w-4" /> New Discussion
                 </Button>
               </Link>
@@ -84,7 +118,7 @@ const Header: React.FC = () => {
                   >
                     <Bell className="h-4 w-4" />
                     {unreadCount > 0 && (
-                      <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-forum-highlight text-white">
+                      <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white">
                         {unreadCount}
                       </Badge>
                     )}
@@ -133,7 +167,7 @@ const Header: React.FC = () => {
               <Button variant="ghost" asChild className="hidden md:inline-flex">
                 <Link to="/login">Log in</Link>
               </Button>
-              <Button className="hidden md:inline-flex" asChild>
+              <Button className="hidden md:inline-flex bg-gradient-to-r from-red-700 to-red-500 hover:from-red-800 hover:to-red-600" asChild>
                 <Link to="/register">Sign up</Link>
               </Button>
               {isMobile && (
