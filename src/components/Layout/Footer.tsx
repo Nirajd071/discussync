@@ -10,9 +10,9 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-2">
-              <MessageSquare className="h-6 w-6 text-forum-primary" />
-              <span className="text-xl font-bold bg-gradient-to-r from-forum-primary to-forum-secondary bg-clip-text text-transparent">
-                ChatterBox
+              <MessageSquare className="h-6 w-6 text-red-500" />
+              <span className="text-xl font-bold bg-gradient-to-r from-red-600 to-red-500 bg-clip-text text-transparent">
+                DiscuSync
               </span>
             </Link>
             <p className="text-sm text-muted-foreground">
@@ -89,7 +89,7 @@ const Footer: React.FC = () => {
 
         <div className="mt-8 pt-6 border-t border-border/40">
           <p className="text-xs text-center text-muted-foreground">
-            © {new Date().getFullYear()} ChatterBox. All rights reserved.
+            © {new Date().getFullYear()} DiscuSync. All rights reserved.
           </p>
         </div>
       </div>
