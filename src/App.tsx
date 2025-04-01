@@ -24,6 +24,7 @@ import TermsPage from "./pages/TermsPage";
 import FaqPage from "./pages/FaqPage";
 import GuidelinesPage from "./pages/GuidelinesPage";
 import AboutPage from "./pages/AboutPage";
+import ProjectsPage from "./pages/ProjectsPage";
 
 const queryClient = new QueryClient();
 
@@ -36,11 +37,12 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<LandingPage />} />
+              <Route path="/" element={<AboutPage />} />
               <Route path="/index" element={<Index />} />
               <Route path="/discussions" element={<DiscussionsPage />} />
               <Route path="/discussions/:id" element={<DiscussionDetailPage />} />
               <Route path="/discussions/new" element={<NewDiscussionPage />} />
+              <Route path="/projects" element={<ProjectsPage />} />
               <Route path="/tags" element={<TagsPage />} />
               <Route path="/users" element={<UsersPage />} />
               <Route path="/users/:username" element={<ProfilePage />} />

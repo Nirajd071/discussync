@@ -16,7 +16,7 @@ const Footer: React.FC = () => {
               </span>
             </Link>
             <p className="text-sm text-muted-foreground">
-              A community platform for sharing knowledge and collaborating on projects.
+              A place for meaningful discussions and collaboration.
             </p>
             <div className="flex space-x-4">
               <a href="#" className="text-muted-foreground hover:text-foreground">
@@ -43,6 +43,11 @@ const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/projects" className="text-muted-foreground hover:text-foreground">
+                  Projects
+                </Link>
+              </li>
+              <li>
                 <Link to="/tags" className="text-muted-foreground hover:text-foreground">
                   Tags
                 </Link>
@@ -64,13 +69,28 @@ const Footer: React.FC = () => {
             <h3 className="text-sm font-medium mb-4">Resources</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/guidelines" className="text-muted-foreground hover:text-foreground">
-                  Community Guidelines
+                <Link to="/blog" className="text-muted-foreground hover:text-foreground">
+                  Blog
                 </Link>
               </li>
               <li>
-                <Link to="/faq" className="text-muted-foreground hover:text-foreground">
-                  FAQ
+                <Link to="/help" className="text-muted-foreground hover:text-foreground">
+                  Help Center
+                </Link>
+              </li>
+              <li>
+                <Link to="/api" className="text-muted-foreground hover:text-foreground">
+                  API
+                </Link>
+              </li>
+              <li>
+                <Link to="/pricing" className="text-muted-foreground hover:text-foreground">
+                  Pricing
+                </Link>
+              </li>
+              <li>
+                <Link to="/guidelines" className="text-muted-foreground hover:text-foreground">
+                  Community Guidelines
                 </Link>
               </li>
               <li>
