@@ -1,0 +1,54 @@
+
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: forum_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # Choose one of the following backends (comment out the one you don't want to use)
+  
+  # Django Backend
+  django_backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.django
+    restart: always
+    depends_on:
+      - postgres
+    env_file:
+      - django_api/.env
+    volumes:
+      - ./django_api:/app
+      - django_media:/app/media
+    ports:
+      - "8000:8000"
+
+  # FastAPI Backend
+  # fastapi_backend:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.fastapi
+  #   restart: always
+  #   depends_on:
+  #     - postgres
+  #   env_file:
+  #     - fastapi_app/.env
+  #   volumes:
+  #     - ./fastapi_app:/app
+  #     - fastapi_uploads:/app/uploads
+  #   ports:
+  #     - "8000:8000"
+
+volumes:
+  pgdata:
+  django_media:
+  fastapi_uploads:
