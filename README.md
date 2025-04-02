@@ -1,6 +1,7 @@
 # Welcome to your DiscusSync
 
 ## Project info
+DiscussSync is a modern web application designed to facilitate meaningful discussions and knowledge sharing within communities. Built with React and TypeScript, it features a clean, intuitive interface with both light and dark mode support. The platform includes key features like user authentication, discussion management, project sharing, and an admin dashboard for platform oversight. The application uses a consistent emerald-teal color scheme throughout its design, providing a professional and cohesive user experience. With components like the DateRangePicker, notification system, and responsive layouts, DiscussSync aims to create an engaging environment for users to connect, share ideas, and collaborate effectively.
 
 ## How can I edit this code?
 
