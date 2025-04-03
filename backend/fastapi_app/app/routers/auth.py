@@ -77,3 +77,8 @@ async def login(
 @router.get("/me/", response_model=schemas.User)
 async def get_current_user_info(current_user: schemas.User = Depends(get_current_user)):
     return current_user
+
+# Test endpoint to verify connectivity
+@router.get("/test/")
+async def test_connection():
+    return {"message": "FastAPI connection successful", "status": "ok"}
