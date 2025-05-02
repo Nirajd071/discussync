@@ -62,3 +62,20 @@ export interface Tag {
   description?: string;
   count: number;
 }
+
+export interface ReportedContent {
+  id: string;
+  content_type: 'discussion' | 'comment' | 'user';
+  content_id: string;
+  parent_id?: string;
+  reporter_id: string;
+  reporter_username: string;
+  reason: string;
+  content: string;
+  resolved: boolean;
+  resolution_note?: string;
+  resolution_action?: 'warning' | 'hide' | 'delete' | 'ban' | 'none';
+  created_at: string;
+  resolved_at?: string;
+  resolved_by?: string;
+}

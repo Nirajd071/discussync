@@ -1,12 +1,12 @@
 
 import os
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.websockets import WebSocketDisconnect
 from .database import engine
 from . import models
-from .routers import auth, users, discussions, comments, tags, notifications, files
-from .dependencies import get_current_user
+from .routers import auth, users, discussions, comments, tags, notifications, files, projects, replies
 
 # Create tables
 models.Base.metadata.create_all(bind=engine)
@@ -17,14 +17,22 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Configure CORS
+# Configure CORS to allow all frontend ports during development
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",
         "http://localhost:5173",
-    ],
-    allow_credentials=True,
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+        "http://localhost:5175",
+        "http://127.0.0.1:5175",
+        "http://localhost:8080",
+        "http://127.0.0.1:8080",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000"
+    ],  # Frontend URLs on various ports
+    allow_credentials=True,  # Allow credentials
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -44,7 +52,21 @@ app.include_router(comments.router)
 app.include_router(tags.router)
 app.include_router(notifications.router)
 app.include_router(files.router)
+app.include_router(projects.router)
+app.include_router(replies.router)
 
 @app.get("/")
 async def root():
     return {"message": "Welcome to the Forum API"}
+
+@app.websocket("/ws")
+async def websocket_route(websocket: WebSocket):
+    # For now, use a simple connection without authentication
+    # to avoid the WebSocket errors
+    await websocket.accept()
+    try:
+        while True:
+            data = await websocket.receive_text()
+            await websocket.send_text(f"Message received: {data}")
+    except WebSocketDisconnect:
+        print("Client disconnected")

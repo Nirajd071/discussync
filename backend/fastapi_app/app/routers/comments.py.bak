@@ -1,0 +1,333 @@
+
+from fastapi import APIRouter, Depends, HTTPException, status, Path
+from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import func
+from typing import List, Optional
+from uuid import UUID
+from .. import models, schemas, utils
+from ..database import get_db
+from ..dependencies import get_current_user
+
+router = APIRouter(
+    prefix="/api/discussions/{discussion_id}/comments",
+    tags=["Comments"],
+)
+
+@router.get("/", response_model=List[schemas.Comment])
+async def get_comments(
+    discussion_id: str = Path(...),
+    db: Session = Depends(get_db),
+    current_user: Optional[models.User] = Depends(get_current_user),
+):
+    # Try both UUID and string formats
+    try:
+        uuid_id = UUID(discussion_id)
+        discussion = db.query(models.Discussion).filter(
+            models.Discussion.id == str(uuid_id)
+        ).first()
+    except ValueError:
+        discussion = db.query(models.Discussion).filter(
+            models.Discussion.id == discussion_id
+        ).first()
+
+    if not discussion:
+        raise HTTPException(status_code=404, detail="Discussion not found")
+
+    # Get only top-level comments (no parent)
+    comments = db.query(models.Comment).filter(
+        models.Comment.discussion_id == discussion_id,
+        models.Comment.parent_id == None  # Only top-level comments
+    ).options(
+        joinedload(models.Comment.author),
+        joinedload(models.Comment.replies).joinedload(models.Comment.author)
+    ).all()
+
+    # Process comments to add upvotes count and has_upvoted flag
+    for comment in comments:
+        # Count upvotes
+        comment.upvotes = db.query(func.count(models.Upvote.id)).filter(
+            models.Upvote.comment_id == comment.id
+        ).scalar()
+
+        # Check if current user has upvoted
+        if current_user:
+            comment.has_upvoted = db.query(models.Upvote).filter(
+                models.Upvote.comment_id == comment.id,
+                models.Upvote.user_id == current_user.id
+            ).first() is not None
+        else:
+            comment.has_upvoted = False
+
+        # Extract mentioned usernames
+        comment.mentioned_users = [user.username for user in comment.mentions]
+
+        # Process replies the same way
+        for reply in comment.replies:
+            reply.upvotes = db.query(func.count(models.Upvote.id)).filter(
+                models.Upvote.comment_id == reply.id
+            ).scalar()
+
+            if current_user:
+                reply.has_upvoted = db.query(models.Upvote).filter(
+                    models.Upvote.comment_id == reply.id,
+                    models.Upvote.user_id == current_user.id
+                ).first() is not None
+            else:
+                reply.has_upvoted = False
+
+            reply.mentioned_users = [user.username for user in reply.mentions]
+
+    return comments
+
+@router.post("/", response_model=schemas.Comment, status_code=status.HTTP_201_CREATED)
+async def create_comment(
+    comment_create: schemas.CommentCreate,
+    discussion_id: str = Path(...),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    # Try both UUID and string formats
+    try:
+        uuid_id = UUID(discussion_id)
+        discussion = db.query(models.Discussion).filter(
+            models.Discussion.id == str(uuid_id)
+        ).first()
+    except ValueError:
+        discussion = db.query(models.Discussion).filter(
+            models.Discussion.id == discussion_id
+        ).first()
+
+    if not discussion:
+        raise HTTPException(status_code=404, detail="Discussion not found")
+
+    # Check if parent comment exists if provided
+    if comment_create.parent_id:
+        parent_comment = db.query(models.Comment).filter(
+            models.Comment.id == comment_create.parent_id,
+            models.Comment.discussion_id == discussion_id
+        ).first()
+        if not parent_comment:
+            raise HTTPException(status_code=404, detail="Parent comment not found")
+
+    # Create comment
+    db_comment = models.Comment(
+        content=comment_create.content,
+        author_id=current_user.id,
+        discussion_id=discussion_id,
+        parent_id=comment_create.parent_id
+    )
+    db.add(db_comment)
+    db.commit()
+    db.refresh(db_comment)
+
+    # Extract and process mentions
+    mentioned_usernames = utils.extract_mentions(comment_create.content)
+
+    for username in mentioned_usernames:
+        user = db.query(models.User).filter(models.User.username == username).first()
+        if user:
+            # Add user to mentions
+            db_comment.mentions.append(user)
+
+            # Create mention notification
+            if user.id != current_user.id:
+                notification = models.Notification(
+                    user_id=user.id,
+                    from_user_id=current_user.id,
+                    type=models.NotificationType.mention,
+                    message=f"{current_user.username} mentioned you in a comment",
+                    discussion_id=discussion_id,
+                    comment_id=db_comment.id
+                )
+                db.add(notification)
+
+    # Create notification for parent comment author
+    if comment_create.parent_id:
+        parent_author_id = db.query(models.Comment.author_id).filter(
+            models.Comment.id == comment_create.parent_id
+        ).scalar()
+
+        if parent_author_id and parent_author_id != current_user.id:
+            notification = models.Notification(
+                user_id=parent_author_id,
+                from_user_id=current_user.id,
+                type=models.NotificationType.reply,
+                message=f"{current_user.username} replied to your comment",
+                discussion_id=discussion_id,
+                comment_id=db_comment.id
+            )
+            db.add(notification)
+
+    # Create notification for discussion author if not already notified
+    elif discussion.author_id != current_user.id:
+        notification = models.Notification(
+            user_id=discussion.author_id,
+            from_user_id=current_user.id,
+            type=models.NotificationType.reply,
+            message=f"{current_user.username} commented on your discussion",
+            discussion_id=discussion_id,
+            comment_id=db_comment.id
+        )
+        db.add(notification)
+
+    db.commit()
+    db.refresh(db_comment)
+
+    # Add computed fields for the response
+    db_comment.upvotes = 0
+    db_comment.has_upvoted = False
+    db_comment.replies = []
+    db_comment.mentioned_users = [user.username for user in db_comment.mentions]
+
+    return db_comment
+
+@router.put("/{comment_id}", response_model=schemas.Comment)
+async def update_comment(
+    comment_id: str,
+    comment_update: schemas.CommentUpdate,
+    discussion_id: str = Path(...),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    # Get comment
+    comment = db.query(models.Comment).filter(
+        models.Comment.id == comment_id,
+        models.Comment.discussion_id == discussion_id
+    ).first()
+
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+
+    # Check if user is the author or an admin
+    if comment.author_id != current_user.id and not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to update this comment",
+        )
+
+    # Update comment
+    if comment_update.content is not None:
+        comment.content = comment_update.content
+
+        # Update mentions
+        new_mentioned_usernames = utils.extract_mentions(comment_update.content)
+        old_mentions = [user for user in comment.mentions]
+
+        # Clear existing mentions
+        comment.mentions = []
+        db.commit()
+
+        # Add new mentions
+        for username in new_mentioned_usernames:
+            user = db.query(models.User).filter(models.User.username == username).first()
+            if user:
+                comment.mentions.append(user)
+
+                # Create notification for new mentions
+                if user.id != current_user.id and user not in old_mentions:
+                    notification = models.Notification(
+                        user_id=user.id,
+                        from_user_id=current_user.id,
+                        type=models.NotificationType.mention,
+                        message=f"{current_user.username} mentioned you in a comment",
+                        discussion_id=discussion_id,
+                        comment_id=comment_id
+                    )
+                    db.add(notification)
+
+    db.commit()
+    db.refresh(comment)
+
+    # Add computed fields
+    comment.upvotes = db.query(func.count(models.Upvote.id)).filter(
+        models.Upvote.comment_id == comment.id
+    ).scalar()
+
+    comment.has_upvoted = db.query(models.Upvote).filter(
+        models.Upvote.comment_id == comment.id,
+        models.Upvote.user_id == current_user.id
+    ).first() is not None
+
+    # Add replies with computed fields
+    comment.replies = db.query(models.Comment).filter(
+        models.Comment.parent_id == comment.id
+    ).options(
+        joinedload(models.Comment.author)
+    ).all()
+
+    for reply in comment.replies:
+        reply.upvotes = db.query(func.count(models.Upvote.id)).filter(
+            models.Upvote.comment_id == reply.id
+        ).scalar()
+
+        reply.has_upvoted = db.query(models.Upvote).filter(
+            models.Upvote.comment_id == reply.id,
+            models.Upvote.user_id == current_user.id
+        ).first() is not None
+
+        reply.mentioned_users = [user.username for user in reply.mentions]
+
+    comment.mentioned_users = [user.username for user in comment.mentions]
+
+    return comment
+
+@router.post("/{comment_id}/upvote", response_model=schemas.UpvoteResponse)
+async def upvote_comment(
+    comment_id: str,
+    discussion_id: str = Path(...),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    # Get comment
+    comment = db.query(models.Comment).filter(
+        models.Comment.id == comment_id,
+        models.Comment.discussion_id == discussion_id
+    ).first()
+
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+
+    # Check if the user has already upvoted
+    existing_upvote = db.query(models.Upvote).filter(
+        models.Upvote.user_id == current_user.id,
+        models.Upvote.comment_id == comment_id
+    ).first()
+
+    if existing_upvote:
+        # Remove upvote if it exists
+        db.delete(existing_upvote)
+        db.commit()
+        has_upvoted = False
+    else:
+        # Create new upvote
+        upvote = models.Upvote(
+            user_id=current_user.id,
+            comment_id=comment_id
+        )
+        db.add(upvote)
+        db.commit()
+
+        # Create notification for comment author
+        if comment.author_id != current_user.id:
+            notification = models.Notification(
+                user_id=comment.author_id,
+                from_user_id=current_user.id,
+                type=models.NotificationType.upvote,
+                message=f"{current_user.username} upvoted your comment",
+                discussion_id=discussion_id,
+                comment_id=comment_id
+            )
+            db.add(notification)
+            db.commit()
+
+        has_upvoted = True
+
+    # Count upvotes
+    upvote_count = db.query(func.count(models.Upvote.id)).filter(
+        models.Upvote.comment_id == comment_id
+    ).scalar()
+
+    return {
+        "upvotes": upvote_count,
+        "hasUpvoted": has_upvoted
+    }
