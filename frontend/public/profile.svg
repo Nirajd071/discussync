@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="200" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    .pulse-animation {
+      animation: pulse 2s infinite;
+    }
+    @keyframes highlight {
+      0%, 100% { fill: #e2e8f0; }
+      50% { fill: #10b981; }
+    }
+    .highlight-animation {
+      animation: highlight 3s infinite;
+    }
+  </style>
+  
+  <!-- Background -->
+  <rect width="400" height="200" fill="#f8fafc" />
+  
+  <!-- Title -->
+  <text x="200" y="30" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="#0f172a">User Profile</text>
+  
+  <!-- Profile card -->
+  <rect x="100" y="50" width="200" height="130" rx="10" ry="10" fill="#ffffff" stroke="#e2e8f0" />
+  
+  <!-- Profile picture -->
+  <circle cx="150" cy="90" r="30" fill="#e2e8f0" class="pulse-animation" />
+  
+  <!-- Profile info -->
+  <text x="220" y="80" font-family="Arial" font-size="16" font-weight="bold" fill="#0f172a">John Doe</text>
+  <text x="220" y="100" font-family="Arial" font-size="14" fill="#64748b">@johndoe</text>
+  
+  <!-- Edit button -->
+  <rect x="190" y="120" width="80" height="30" rx="5" ry="5" class="highlight-animation" />
+  <text x="230" y="140" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="#ffffff">Edit</text>
+</svg>

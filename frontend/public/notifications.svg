@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="200" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    @keyframes bell {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(10deg); }
+      75% { transform: rotate(-10deg); }
+    }
+    .bell-animation {
+      animation: bell 1s infinite;
+      transform-origin: center;
+    }
+    @keyframes slide {
+      0% { transform: translateY(-50px); opacity: 0; }
+      20%, 80% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(50px); opacity: 0; }
+    }
+    .notification-animation {
+      animation: slide 4s infinite;
+    }
+  </style>
+  
+  <!-- Background -->
+  <rect width="400" height="200" fill="#f8fafc" />
+  
+  <!-- Title -->
+  <text x="200" y="30" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="#0f172a">Notifications</text>
+  
+  <!-- Bell icon -->
+  <g class="bell-animation">
+    <path d="M200,60 L210,60 C210,55 205,50 200,50 C195,50 190,55 190,60 Z" fill="#10b981" />
+    <path d="M220,90 C220,70 210,60 210,60 L190,60 C190,60 180,70 180,90 L180,110 L220,110 Z" fill="#10b981" />
+    <circle cx="200" cy="120" r="5" fill="#10b981" />
+  </g>
+  
+  <!-- Notification 1 -->
+  <g class="notification-animation">
+    <rect x="100" y="80" width="200" height="40" rx="5" ry="5" fill="#ffffff" stroke="#e2e8f0" />
+    <text x="120" y="105" font-family="Arial" font-size="14" fill="#0f172a">New reply to your discussion</text>
+  </g>
+  
+  <!-- Notification 2 (delayed) -->
+  <g class="notification-animation" style="animation-delay: 2s;">
+    <rect x="100" y="130" width="200" height="40" rx="5" ry="5" fill="#ffffff" stroke="#e2e8f0" />
+    <text x="120" y="155" font-family="Arial" font-size="14" fill="#0f172a">Someone mentioned you</text>
+  </g>
+</svg>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="400" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .title { font: bold 20px sans-serif; fill: #333; }
+    .box { stroke-width: 2px; rx: 10; ry: 10; }
+    .frontend { fill: #10b981; stroke: #059669; }
+    .backend { fill: #3b82f6; stroke: #2563eb; }
+    .database { fill: #8b5cf6; stroke: #7c3aed; }
+    .text { font: 16px sans-serif; fill: white; text-anchor: middle; }
+    .arrow { stroke: #64748b; stroke-width: 2; marker-end: url(#arrowhead); }
+    .label { font: 14px sans-serif; fill: #64748b; text-anchor: middle; }
+  </style>
+  
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+    </marker>
+  </defs>
+  
+  <text x="400" y="40" class="title" text-anchor="middle">DiscusSync Architecture</text>
+  
+  <!-- Frontend Layer -->
+  <rect x="100" y="80" width="600" height="80" class="box frontend" />
+  <text x="400" y="120" class="text">Frontend (React, TypeScript, Vite, Tailwind CSS, shadcn/ui)</text>
+  
+  <!-- Backend Layer -->
+  <rect x="100" y="200" width="600" height="80" class="box backend" />
+  <text x="400" y="240" class="text">Backend (FastAPI, Python, JWT Authentication)</text>
+  
+  <!-- Database Layer -->
+  <rect x="100" y="320" width="600" height="80" class="box database" />
+  <text x="400" y="360" class="text">Database (PostgreSQL)</text>
+  
+  <!-- Arrows -->
+  <line x1="400" y1="160" x2="400" y2="200" class="arrow" />
+  <text x="420" y="180" class="label">API Requests</text>
+  
+  <line x1="400" y1="280" x2="400" y2="320" class="arrow" />
+  <text x="420" y="300" class="label">Data Operations</text>
+</svg>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#0d9488" />
+    </linearGradient>
+  </defs>
+  
+  <circle cx="100" cy="100" r="90" fill="url(#gradient)" />
+  
+  <!-- Chat bubble 1 -->
+  <path d="M70,70 Q50,90 70,110 L60,120 L75,115 Q90,130 110,110 Q130,90 110,70 Q90,50 70,70 Z" 
+        fill="white" stroke="#0d9488" stroke-width="2" />
+  
+  <!-- Chat bubble 2 -->
+  <path d="M130,90 Q150,110 130,130 L140,140 L125,135 Q110,150 90,130 Q70,110 90,90 Q110,70 130,90 Z" 
+        fill="white" stroke="#10b981" stroke-width="2" />
+  
+  <!-- D letter -->
+  <text x="100" y="110" font-family="Arial" font-size="40" font-weight="bold" text-anchor="middle" fill="#0d9488">DS</text>
+</svg>

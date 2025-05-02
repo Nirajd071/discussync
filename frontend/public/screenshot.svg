@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="450" viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .background { fill: #f8fafc; }
+    .header { fill: #ffffff; stroke: #e2e8f0; }
+    .sidebar { fill: #ffffff; stroke: #e2e8f0; }
+    .content { fill: #ffffff; stroke: #e2e8f0; }
+    .card { fill: #ffffff; stroke: #e2e8f0; rx: 8; ry: 8; }
+    .text-block { fill: #e2e8f0; rx: 4; ry: 4; }
+    .button { fill: #10b981; rx: 6; ry: 6; }
+    .button-text { font: bold 14px sans-serif; fill: white; text-anchor: middle; }
+    .title { font: bold 18px sans-serif; fill: #0f172a; }
+    .logo-text { font: bold 24px sans-serif; fill: #10b981; }
+  </style>
+  
+  <!-- Background -->
+  <rect width="800" height="450" class="background" />
+  
+  <!-- Header -->
+  <rect x="0" y="0" width="800" height="60" class="header" />
+  <text x="30" y="38" class="logo-text">DiscusSync</text>
+  
+  <!-- Navigation items -->
+  <rect x="200" y="20" width="80" height="20" class="text-block" />
+  <rect x="300" y="20" width="80" height="20" class="text-block" />
+  <rect x="400" y="20" width="80" height="20" class="text-block" />
+  
+  <!-- User menu -->
+  <circle cx="750" cy="30" r="20" fill="#e2e8f0" />
+  
+  <!-- Sidebar -->
+  <rect x="0" y="60" width="200" height="390" class="sidebar" />
+  
+  <!-- Sidebar items -->
+  <rect x="20" y="100" width="160" height="20" class="text-block" />
+  <rect x="20" y="140" width="160" height="20" class="text-block" />
+  <rect x="20" y="180" width="160" height="20" class="text-block" />
+  <rect x="20" y="220" width="160" height="20" class="text-block" />
+  <rect x="20" y="260" width="160" height="20" class="text-block" />
+  
+  <!-- Main content -->
+  <rect x="200" y="60" width="600" height="390" class="content" />
+  
+  <!-- Page title -->
+  <text x="230" y="100" class="title">Recent Discussions</text>
+  
+  <!-- New discussion button -->
+  <rect x="650" y="80" width="130" height="35" class="button" />
+  <text x="715" y="102" class="button-text">New Discussion</text>
+  
+  <!-- Discussion cards -->
+  <rect x="230" y="120" width="540" height="100" class="card" />
+  <rect x="250" y="140" width="300" height="20" class="text-block" />
+  <rect x="250" y="170" width="500" height="10" class="text-block" />
+  <rect x="250" y="190" width="500" height="10" class="text-block" />
+  
+  <rect x="230" y="240" width="540" height="100" class="card" />
+  <rect x="250" y="260" width="300" height="20" class="text-block" />
+  <rect x="250" y="290" width="500" height="10" class="text-block" />
+  <rect x="250" y="310" width="500" height="10" class="text-block" />
+  
+  <rect x="230" y="360" width="540" height="100" class="card" />
+  <rect x="250" y="380" width="300" height="20" class="text-block" />
+  <rect x="250" y="410" width="500" height="10" class="text-block" />
+  <rect x="250" y="430" width="500" height="10" class="text-block" />
+</svg>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="200" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    @keyframes toggle {
+      0%, 100% { transform: translateX(0); fill: #10b981; }
+      50% { transform: translateX(50px); fill: #6366f1; }
+    }
+    .toggle-circle {
+      animation: toggle 3s infinite;
+    }
+    .background {
+      animation: background 3s infinite;
+    }
+    @keyframes background {
+      0%, 100% { fill: #f8fafc; }
+      50% { fill: #1e293b; }
+    }
+    .text {
+      animation: text 3s infinite;
+    }
+    @keyframes text {
+      0%, 100% { fill: #0f172a; }
+      50% { fill: #f8fafc; }
+    }
+  </style>
+  
+  <!-- Background -->
+  <rect width="400" height="200" class="background" />
+  
+  <!-- Title -->
+  <text x="200" y="40" font-family="Arial" font-size="20" font-weight="bold" text-anchor="middle" class="text">Theme Toggle</text>
+  
+  <!-- Toggle track -->
+  <rect x="125" y="80" width="150" height="50" rx="25" ry="25" fill="#e2e8f0" />
+  
+  <!-- Toggle circle -->
+  <circle cx="150" cy="105" r="20" class="toggle-circle" />
+  
+  <!-- Light/Dark labels -->
+  <text x="140" y="150" font-family="Arial" font-size="16" text-anchor="middle" class="text">Light</text>
+  <text x="260" y="150" font-family="Arial" font-size="16" text-anchor="middle" class="text">Dark</text>
+</svg>

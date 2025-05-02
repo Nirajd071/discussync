@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="200" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    @keyframes typing {
+      0%, 100% { width: 0px; }
+      50% { width: 120px; }
+    }
+    .typing-animation {
+      animation: typing 4s infinite;
+    }
+    @keyframes fade {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 1; }
+    }
+    .fade-animation {
+      animation: fade 4s infinite;
+    }
+  </style>
+  
+  <!-- Background -->
+  <rect width="400" height="200" fill="#f8fafc" />
+  
+  <!-- Title -->
+  <text x="200" y="30" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="#0f172a">Discussions</text>
+  
+  <!-- Discussion thread -->
+  <rect x="50" y="50" width="300" height="40" rx="5" ry="5" fill="#ffffff" stroke="#e2e8f0" />
+  <text x="70" y="75" font-family="Arial" font-size="14" fill="#0f172a">User 1: Hello everyone!</text>
+  
+  <rect x="70" y="100" width="280" height="40" rx="5" ry="5" fill="#f1f5f9" stroke="#e2e8f0" />
+  <text x="90" y="125" font-family="Arial" font-size="14" fill="#0f172a">User 2: Hi there!</text>
+  
+  <!-- Typing indicator -->
+  <rect x="90" y="150" width="260" height="40" rx="5" ry="5" fill="#f1f5f9" stroke="#e2e8f0" />
+  <text x="110" y="175" font-family="Arial" font-size="14" fill="#0f172a">User 3: </text>
+  
+  <!-- The typing animation -->
+  <rect x="160" y="165" class="typing-animation" height="2" fill="#0f172a" />
+  
+  <!-- New message notification -->
+  <circle cx="350" cy="30" r="10" fill="#10b981" class="fade-animation" />
+  <text x="350" y="34" font-family="Arial" font-size="12" font-weight="bold" text-anchor="middle" fill="white" class="fade-animation">1</text>
+</svg>
