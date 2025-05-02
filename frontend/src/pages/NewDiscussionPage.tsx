@@ -39,6 +39,26 @@ const NewDiscussionPage = () => {
     };
 
     fetchSuggestedTags();
+
+    // Check for pending discussion data in sessionStorage
+    const pendingDiscussion = sessionStorage.getItem('pendingDiscussion');
+    if (pendingDiscussion) {
+      try {
+        const data = JSON.parse(pendingDiscussion);
+        console.log('Restoring pending discussion data:', data);
+
+        // Restore form data
+        if (data.title) setTitle(data.title);
+        if (data.content) setContent(data.content);
+        if (data.tags) setTags(data.tags);
+        if (data.attachments) setAttachments(data.attachments);
+
+        // Don't remove the data yet - we'll remove it when the discussion is successfully created
+      } catch (error) {
+        console.error('Error restoring pending discussion data:', error);
+        sessionStorage.removeItem('pendingDiscussion');
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -56,7 +76,7 @@ const NewDiscussionPage = () => {
   const handleAddTag = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
-      
+
       const trimmedTag = tagInput.trim();
       if (trimmedTag && !tags.includes(trimmedTag) && tags.length < 5) {
         setTags([...tags, trimmedTag]);
@@ -85,7 +105,7 @@ const NewDiscussionPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!title.trim() || !content.trim()) {
       toast({
         title: 'Missing information',
@@ -94,29 +114,95 @@ const NewDiscussionPage = () => {
       });
       return;
     }
-    
+
     try {
       setIsSubmitting(true);
-      
-      const newDiscussion = await api.createDiscussion({
-        title,
-        content,
-        tags,
-        attachments
-      });
-      
-      toast({
-        title: 'Discussion created',
-        description: 'Your discussion has been posted successfully',
-      });
-      
-      navigate(`/discussions/${newDiscussion.id}`);
+
+      // Check authentication before submitting
+      if (!isAuthenticated) {
+        console.log('User not authenticated, redirecting to login');
+        toast({
+          title: 'Authentication required',
+          description: 'You need to be logged in to create a discussion',
+          variant: 'destructive',
+        });
+        // Store the current form data in sessionStorage so we can restore it after login
+        sessionStorage.setItem('pendingDiscussion', JSON.stringify({
+          title,
+          content,
+          tags,
+          attachments
+        }));
+        navigate('/login?redirect=/new-discussion');
+        return;
+      }
+
+      console.log('Submitting discussion with data:', { title, content, tags, attachments });
+
+      try {
+        const newDiscussion = await api.createDiscussion({
+          title,
+          content,
+          tags,
+          attachments
+        });
+
+        console.log('Discussion created successfully:', newDiscussion);
+
+        toast({
+          title: 'Discussion created',
+          description: 'Your discussion has been posted successfully',
+        });
+
+        // Clear any stored pending discussion
+        sessionStorage.removeItem('pendingDiscussion');
+
+        // Navigate to the new discussion
+        navigate(`/discussions/${newDiscussion.id}`);
+      } catch (apiError) {
+        console.error('API error creating discussion:', apiError);
+
+        // Handle authentication errors
+        if (apiError.message && apiError.message.includes('Authentication')) {
+          console.log('Authentication error, redirecting to login');
+
+          // Store the current form data in sessionStorage
+          sessionStorage.setItem('pendingDiscussion', JSON.stringify({
+            title,
+            content,
+            tags,
+            attachments
+          }));
+
+          toast({
+            title: 'Authentication required',
+            description: 'Your session has expired. Please log in again.',
+            variant: 'destructive',
+          });
+
+          navigate('/login?redirect=/new-discussion');
+          return;
+        }
+
+        // Handle other API errors
+        toast({
+          title: 'Error creating discussion',
+          description: apiError.message || 'Failed to create discussion. Please try again.',
+          variant: 'destructive',
+        });
+
+        setIsSubmitting(false);
+      }
     } catch (error) {
+      console.error('Unexpected error creating discussion:', error);
+
+      // Show generic error message
       toast({
         title: 'Error',
-        description: 'Failed to create discussion',
+        description: 'An unexpected error occurred. Please try again.',
         variant: 'destructive',
       });
+
       setIsSubmitting(false);
     }
   };
@@ -207,8 +293,8 @@ const NewDiscussionPage = () => {
               )}
             </div>
 
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="w-full flex gap-2"
               disabled={isSubmitting || !title.trim() || !content.trim()}
             >
@@ -221,7 +307,7 @@ const NewDiscussionPage = () => {
         <div className="md:col-span-1">
           <div className="bg-card rounded-lg border p-4 mb-6">
             <h3 className="font-medium mb-4">Attachments</h3>
-            <FileUploader 
+            <FileUploader
               onFileUploaded={handleAttachmentUploaded}
               onFileRemoved={handleAttachmentRemoved}
               uploadedFiles={attachments}

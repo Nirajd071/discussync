@@ -4,10 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { MessageSquare, FileCode, Bell, ChevronRight } from 'lucide-react';
 import MainLayout from '@/components/Layout/MainLayout';
+// DevNavigation moved to admin dashboard
 
 const LandingPage = () => {
   return (
     <MainLayout>
+      {/* Dev Navigation moved to admin dashboard */}
+
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30">
         <div className="absolute inset-0 bg-grid-emerald-500/[0.02] bg-[size:60px_60px] animate-[grid_20s_linear_infinite]" />
@@ -21,8 +24,8 @@ const LandingPage = () => {
               other passionate developers.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4 animate-fade-in [animation-delay:400ms]">
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white group"
                 asChild
               >
@@ -31,8 +34,8 @@ const LandingPage = () => {
                   <ChevronRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 variant="outline"
                 className="border-emerald-200 hover:bg-emerald-50 dark:border-emerald-800/30 dark:hover:bg-emerald-950/20"
                 asChild
@@ -92,8 +95,8 @@ const LandingPage = () => {
             <p className="text-lg mb-8 max-w-2xl mx-auto">
               Join our growing community of developers and start sharing your ideas today.
             </p>
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               variant="secondary"
               className="bg-white text-emerald-600 hover:bg-gray-100 group"
               asChild

@@ -12,17 +12,33 @@ const TagsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [tags, setTags] = useState<Array<{ name: string; count: number }>>([]);
 
-  // Simulating loading and error state for now
+  // Load tags from API
   React.useEffect(() => {
     const loadTags = async () => {
       try {
         setIsLoading(true);
-        // TODO: Replace with actual API call
-        throw new Error('Failed to load tags');
-        // const response = await fetch('/api/tags');
-        // const data = await response.json();
-        // setTags(data);
+        const authToken = localStorage.getItem('auth_token');
+        const headers: HeadersInit = {
+          'Content-Type': 'application/json',
+        };
+
+        if (authToken) {
+          headers['Authorization'] = `Bearer ${authToken}`;
+        }
+
+        const response = await fetch('http://localhost:8004/api/tags/', {
+          method: 'GET',
+          headers
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch tags: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setTags(data);
       } catch (err) {
+        console.error('Error loading tags:', err);
         setError('Failed to load tags. Please try again later.');
       } finally {
         setIsLoading(false);

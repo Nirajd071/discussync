@@ -24,10 +24,16 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 'md', showName = f
     lg: 'text-base'
   };
 
+  // Generate display name from first_name and last_name if name is not available
+  const displayName = user.name ||
+    (user.first_name && user.last_name ?
+      `${user.first_name} ${user.last_name}` :
+      (user.first_name || user.username));
+
   const avatar = (
     <Avatar className={sizeClasses[size]}>
-      <AvatarImage src={user.avatar} alt={user.name} />
-      <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+      <AvatarImage src={user.avatar || undefined} alt={displayName} />
+      <AvatarFallback>{displayName.charAt(0).toUpperCase()}</AvatarFallback>
     </Avatar>
   );
 
@@ -40,7 +46,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 'md', showName = f
       {avatar}
       {showName && (
         <div className="ml-2">
-          <span className={`font-medium ${nameClasses[size]}`}>{user.name}</span>
+          <span className={`font-medium ${nameClasses[size]}`}>{displayName}</span>
           <span className="text-xs text-muted-foreground ml-1">@{user.username}</span>
         </div>
       )}

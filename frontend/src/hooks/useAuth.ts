@@ -12,20 +12,20 @@ export const useAuth = () => {
     name: string;
     username: string;
   }>(null);
-  
+
   // Test API connection
   const testApiConnection = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:8000/api/auth/test/');
+      const response = await fetch('http://localhost:8004/api/auth/test/');
       const data = await response.json();
-      
+
       toast({
         title: 'API Connection Test',
         description: data.message || 'Connection test completed',
         variant: data.status === 'ok' ? 'default' : 'destructive',
       });
-      
+
       return data;
     } catch (error) {
       console.error('API connection test failed:', error);
@@ -39,7 +39,7 @@ export const useAuth = () => {
       setIsLoading(false);
     }
   };
-  
+
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
@@ -54,12 +54,12 @@ export const useAuth = () => {
       setIsLoading(false);
     }
   };
-  
+
   const logout = () => {
     setIsAuthenticated(false);
     setUser(null);
   };
-  
+
   return {
     isAuthenticated,
     user,

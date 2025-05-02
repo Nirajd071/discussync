@@ -8,15 +8,15 @@ import { Shield, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const AdminLoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('admin@discussync.com');
+  const [password, setPassword] = useState('admin123');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !password) {
       toast({
         title: 'Error',
@@ -25,17 +25,50 @@ const AdminLoginPage = () => {
       });
       return;
     }
-    
+
     try {
       setIsLoading(true);
-      // TODO: Implement actual admin authentication
-      // For now, we'll just simulate a successful login
-      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Use the API to login
+      const response = await fetch('http://localhost:8004/api/auth/login-json/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || 'Login failed');
+      }
+
+      // Check if user is admin
+      if (!data.user.is_admin) {
+        toast({
+          title: 'Access Denied',
+          description: 'You do not have admin privileges',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Store the token
+      localStorage.setItem('auth_token', data.token);
+
+      // Navigate to admin dashboard
       navigate('/admin/dashboard');
+
+      toast({
+        title: 'Success',
+        description: 'Logged in as administrator',
+      });
     } catch (error) {
+      console.error('Login error:', error);
       toast({
         title: 'Error',
-        description: 'Invalid credentials',
+        description: error instanceof Error ? error.message : 'Invalid credentials',
         variant: 'destructive',
       });
     } finally {
@@ -83,8 +116,8 @@ const AdminLoginPage = () => {
               className="border-emerald-200 dark:border-emerald-800/30 focus-visible:ring-emerald-500"
             />
           </div>
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
             disabled={isLoading}
           >
@@ -93,8 +126,8 @@ const AdminLoginPage = () => {
         </form>
 
         <div className="mt-6 text-center">
-          <Link 
-            to="/login" 
+          <Link
+            to="/login"
             className="text-sm text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
           >
             Back to regular login
@@ -105,4 +138,4 @@ const AdminLoginPage = () => {
   );
 };
 
-export default AdminLoginPage; 
+export default AdminLoginPage;

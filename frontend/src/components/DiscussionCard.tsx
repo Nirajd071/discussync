@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-import { ArrowUp, MessageSquare, Paperclip } from 'lucide-react';
+import { ArrowUp, MessageSquare, Paperclip, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Discussion } from '@/types';
@@ -10,22 +10,29 @@ import UserAvatar from './UserAvatar';
 import TagBadge from './TagBadge';
 import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface DiscussionCardProps {
   discussion: Discussion;
   onUpvote?: (id: string, newUpvotes: number, hasUpvoted: boolean) => void;
+  onDelete?: (id: string) => void;
+  showDeleteButton?: boolean;
 }
 
-const DiscussionCard: React.FC<DiscussionCardProps> = ({ 
-  discussion, 
-  onUpvote 
+const DiscussionCard: React.FC<DiscussionCardProps> = ({
+  discussion,
+  onUpvote,
+  onDelete,
+  showDeleteButton = false
 }) => {
   const { toast } = useToast();
-  
+  const { user } = useAuth();
+  const isAuthor = user?.id === discussion.author.id;
+
   const handleUpvote = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     try {
       const { upvotes, hasUpvoted } = await api.upvoteDiscussion(discussion.id);
       if (onUpvote) {
@@ -37,6 +44,15 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
         description: 'Failed to upvote discussion',
         variant: 'destructive',
       });
+    }
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (onDelete) {
+      onDelete(discussion.id);
     }
   };
 
@@ -52,20 +68,24 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
               <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
                 {discussion.content}
               </p>
-              
+
               <div className="flex flex-wrap gap-1.5 mb-3">
-                {discussion.tags.map(tag => (
-                  <TagBadge key={tag} tag={tag} size="sm" />
+                {discussion.tags && discussion.tags.map(tag => (
+                  <TagBadge
+                    key={typeof tag === 'string' ? tag : tag.name}
+                    tag={typeof tag === 'string' ? tag : tag.name}
+                    size="sm"
+                  />
                 ))}
               </div>
             </div>
-            
+
             <div className="flex flex-col items-center space-y-1">
               <Button
-                variant={discussion.hasUpvoted ? "default" : "outline"}
+                variant={(discussion.hasUpvoted || discussion.has_upvoted) ? "default" : "outline"}
                 size="icon"
                 className={`h-8 w-8 rounded-full ${
-                  discussion.hasUpvoted
+                  (discussion.hasUpvoted || discussion.has_upvoted)
                     ? "bg-forum-primary hover:bg-forum-primary/90"
                     : "hover:bg-muted"
                 }`}
@@ -73,30 +93,33 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
               >
                 <ArrowUp className="h-4 w-4" />
               </Button>
-              <span className="text-xs font-medium">{discussion.upvotes}</span>
+              <span className="text-xs font-medium">{discussion.upvote_count || 0}</span>
             </div>
           </div>
         </CardContent>
       </Link>
-      
+
       <CardFooter className="p-4 pt-0 border-t flex items-center justify-between text-sm text-muted-foreground">
         <div className="flex items-center">
           <UserAvatar user={discussion.author} size="sm" />
           <span className="ml-2">
-            <Link 
+            <Link
               to={`/users/${discussion.author.username}`}
               className="text-xs font-medium hover:underline hover:text-foreground"
               onClick={(e) => e.stopPropagation()}
             >
-              {discussion.author.name}
+              {discussion.author.name ||
+                (discussion.author.first_name && discussion.author.last_name ?
+                  `${discussion.author.first_name} ${discussion.author.last_name}` :
+                  (discussion.author.first_name || discussion.author.username))}
             </Link>
             <span className="text-xs"> · </span>
             <span className="text-xs">
-              {formatDistanceToNow(discussion.createdAt, { addSuffix: true })}
+              {formatDistanceToNow(discussion.createdAt ? discussion.createdAt : new Date(discussion.created_at || ''), { addSuffix: true })}
             </span>
           </span>
         </div>
-        
+
         <div className="flex items-center space-x-4">
           {discussion.attachments && discussion.attachments.length > 0 && (
             <div className="flex items-center text-xs">
@@ -104,11 +127,23 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
               <span>{discussion.attachments.length}</span>
             </div>
           )}
-          
+
           <div className="flex items-center text-xs">
             <MessageSquare className="mr-1 h-3 w-3" />
-            <span>{discussion.commentCount}</span>
+            <span>{discussion.comment_count || 0}</span>
           </div>
+
+          {showDeleteButton && isAuthor && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-muted-foreground hover:text-destructive"
+              onClick={handleDelete}
+              title="Delete discussion"
+            >
+              <Trash className="h-3.5 w-3.5" />
+            </Button>
+          )}
         </div>
       </CardFooter>
     </Card>

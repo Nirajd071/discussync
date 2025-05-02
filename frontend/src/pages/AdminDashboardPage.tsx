@@ -60,6 +60,8 @@ import {
 } from "@/components/ui/select";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { Progress } from "@/components/ui/progress";
+import ContentModerationTab from "@/components/admin/ContentModerationTab";
+import DevNavigation from '@/components/Layout/DevNavigation';
 
 const AdminDashboardPage = () => {
   const { toast } = useToast();
@@ -176,6 +178,12 @@ const AdminDashboardPage = () => {
                       Notifications
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/analytics" className="flex items-center">
+                      <BarChart2 className="mr-2 h-4 w-4" />
+                      Analytics
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>
                     <Link to="/login" className="flex items-center text-red-600">
@@ -220,8 +228,14 @@ const AdminDashboardPage = () => {
             <TabsTrigger value="discussions" className="data-[state=active]:bg-emerald-50 dark:data-[state=active]:bg-emerald-950/20">
               Discussions
             </TabsTrigger>
+            <TabsTrigger value="moderation" className="data-[state=active]:bg-emerald-50 dark:data-[state=active]:bg-emerald-950/20">
+              Moderation
+            </TabsTrigger>
             <TabsTrigger value="activity" className="data-[state=active]:bg-emerald-50 dark:data-[state=active]:bg-emerald-950/20">
               Activity Log
+            </TabsTrigger>
+            <TabsTrigger value="devtools" className="data-[state=active]:bg-emerald-50 dark:data-[state=active]:bg-emerald-950/20">
+              Developer Tools
             </TabsTrigger>
           </TabsList>
 
@@ -414,6 +428,11 @@ const AdminDashboardPage = () => {
             </Card>
           </TabsContent>
 
+          {/* Moderation Tab */}
+          <TabsContent value="moderation" className="space-y-6">
+            <ContentModerationTab />
+          </TabsContent>
+
           {/* Activity Log Tab */}
           <TabsContent value="activity" className="space-y-6">
             <Card className="border-emerald-100 dark:border-emerald-800/30">
@@ -459,10 +478,31 @@ const AdminDashboardPage = () => {
               </div>
             </Card>
           </TabsContent>
+
+          {/* Developer Tools Tab */}
+          <TabsContent value="devtools" className="space-y-6">
+            <Card className="border-emerald-100 dark:border-emerald-800/30">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-semibold">Developer Tools</h2>
+                  <Button
+                    variant="outline"
+                    onClick={handleRefresh}
+                    disabled={isLoading}
+                    className="border-emerald-200 hover:bg-emerald-50 dark:border-emerald-800/30 dark:hover:bg-emerald-950/20"
+                  >
+                    <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                    Refresh
+                  </Button>
+                </div>
+                <DevNavigation />
+              </div>
+            </Card>
+          </TabsContent>
         </Tabs>
       </main>
     </div>
   );
 };
 
-export default AdminDashboardPage; 
+export default AdminDashboardPage;

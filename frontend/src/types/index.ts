@@ -1,13 +1,18 @@
 
 export interface User {
   id: string;
-  name: string;
+  first_name?: string;
+  last_name?: string;
+  name?: string; // Computed from first_name and last_name
   email: string;
   username: string;
-  avatar: string;
-  bio?: string;
-  joinedAt: Date;
-  isAdmin?: boolean;
+  avatar?: string | null;
+  bio?: string | null;
+  joinedAt?: Date;
+  created_at?: string;
+  is_admin?: boolean;
+  metadata?: string | Record<string, any>; // Additional profile data
+  suppressToast?: boolean; // Used internally for controlling toast notifications
 }
 
 export interface Discussion {
@@ -15,12 +20,17 @@ export interface Discussion {
   title: string;
   content: string;
   author: User;
-  createdAt: Date;
-  updatedAt?: Date;
-  tags: string[];
-  upvotes: number;
-  commentCount: number;
+  createdAt?: Date; // Legacy field
+  created_at?: string; // New field from backend
+  updatedAt?: Date; // Legacy field
+  updated_at?: string; // New field from backend
+  tags: (string | Tag)[];
+  upvotes?: number; // Legacy field
+  upvote_count?: number; // New field from backend
+  commentCount?: number; // Legacy field
+  comment_count?: number; // New field from backend
   hasUpvoted?: boolean;
+  has_upvoted?: boolean; // New field from backend
   attachments?: Attachment[];
 }
 

@@ -2,13 +2,18 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-import { 
-  ChevronLeft, 
-  ArrowUp, 
-  MessageSquare, 
+import {
+  ChevronLeft,
+  ArrowUp,
+  MessageSquare,
   Share2,
-  Paperclip
+  Paperclip,
+  AlertCircle,
+  Flag
 } from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { ErrorMessage } from '@/components/ui/error-message';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -17,9 +22,12 @@ import UserAvatar from '@/components/UserAvatar';
 import TagBadge from '@/components/TagBadge';
 import CommentCard from '@/components/CommentCard';
 import CommentForm from '@/components/CommentForm';
+import ReportContentDialog from '@/components/ReportContentDialog';
 import { api } from '@/lib/api';
+import { analytics } from '@/lib/analytics';
 import { Discussion, Comment, Attachment } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Tooltip,
   TooltipContent,
@@ -41,29 +49,88 @@ const DiscussionDetailPage = () => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const { user } = useAuth();
   const [selectedAttachment, setSelectedAttachment] = useState<Attachment | null>(null);
+
+  // Function to load comments separately
+  const loadComments = async (discussionId: string) => {
+    if (!discussionId) return;
+
+    try {
+      console.log(`Loading comments for discussion ID: ${discussionId} (separate function)`);
+      const commentsData = await api.getCommentsByDiscussionId(discussionId);
+
+      if (commentsData && Array.isArray(commentsData)) {
+        console.log(`Successfully loaded ${commentsData.length} comments in separate function`);
+
+        // Log each comment for debugging
+        commentsData.forEach((comment, index) => {
+          console.log(`Comment ${index + 1}:`, {
+            id: comment.id,
+            content: comment.content?.substring(0, 20) + '...',
+            hasReplies: comment.replies && comment.replies.length > 0,
+            replyCount: comment.replies?.length || 0
+          });
+        });
+
+        setComments(commentsData);
+      } else {
+        console.warn('Comments data is not an array or is empty:', commentsData);
+        setComments([]);
+      }
+    } catch (error) {
+      console.error('Error loading comments in separate function:', error);
+      setComments([]);
+    }
+  };
 
   useEffect(() => {
     const loadDiscussion = async () => {
       if (!id) return;
-      
+
       try {
         setIsLoading(true);
-        
+        console.log(`Loading discussion with ID: ${id}`);
+
         // Load discussion details
-        const discussionData = await api.getDiscussionById(id);
-        if (discussionData) {
-          setDiscussion(discussionData);
+        try {
+          const discussionData = await api.getDiscussionById(id);
+          console.log('Discussion data received:', discussionData);
+
+          if (discussionData) {
+            setDiscussion(discussionData);
+
+            // Track discussion view
+            analytics.trackDiscussionView(id, user?.id);
+
+            // Load comments separately after a short delay to ensure discussion is set
+            setTimeout(() => {
+              loadComments(id);
+            }, 100);
+          } else {
+            console.error('Discussion not found');
+            // Discussion is null, will show the "not found" UI
+          }
+        } catch (discussionError) {
+          console.error('Error loading discussion:', discussionError);
+
+          // Check if it's a 404 error
+          if (discussionError.message && (discussionError.message.includes('404') || discussionError.message.includes('not found'))) {
+            // Discussion not found - we'll show the "not found" UI
+          } else {
+            // Other error
+            toast({
+              title: 'Error',
+              description: 'Failed to load discussion details. Please try again.',
+              variant: 'destructive',
+            });
+          }
         }
-        
-        // Load comments
-        const commentsData = await api.getCommentsByDiscussionId(id);
-        setComments(commentsData);
-        
       } catch (error) {
+        console.error('Unexpected error in loadDiscussion:', error);
         toast({
           title: 'Error',
-          description: 'Failed to load discussion details',
+          description: 'An unexpected error occurred. Please try again.',
           variant: 'destructive',
         });
       } finally {
@@ -72,58 +139,130 @@ const DiscussionDetailPage = () => {
     };
 
     loadDiscussion();
-  }, [id, toast]);
+
+    // Load comments once initially
+    if (id) {
+      loadComments(id);
+    }
+
+    return () => {
+      // Cleanup function
+    };
+  }, [id, toast, user?.id]);
 
   const handleSubmitComment = async (content: string) => {
     if (!id) return;
-    
+
     try {
-      const newComment = await api.createComment(id, { content });
-      
-      // Add the new comment to the list
-      setComments(prev => [newComment, ...prev]);
-      
-      // Update comment count
-      if (discussion) {
-        setDiscussion({
-          ...discussion,
-          commentCount: discussion.commentCount + 1
+      console.log(`Submitting comment for discussion ID: ${id}`);
+
+      // Check if user is authenticated
+      if (!user) {
+        console.log('User not authenticated, showing error');
+        toast({
+          title: 'Authentication required',
+          description: 'You need to be logged in to post a comment',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      try {
+        const newComment = await api.createComment(id, { content });
+        console.log('Comment created successfully:', newComment);
+
+        // Refresh all comments instead of just adding the new one
+        // This ensures we get the latest state from the server
+        loadComments(id);
+
+        // Update comment count
+        if (discussion) {
+          setDiscussion({
+            ...discussion,
+            commentCount: (discussion.commentCount || 0) + 1,
+            comment_count: (discussion.comment_count || 0) + 1
+          });
+        }
+
+        // Track comment creation
+        analytics.trackCommentCreate(newComment.id, id, user?.id);
+
+        toast({
+          title: 'Comment added',
+          description: 'Your comment has been posted successfully',
+        });
+      } catch (apiError) {
+        console.error('API error creating comment:', apiError);
+
+        // Handle authentication errors
+        if (apiError.message && apiError.message.includes('Authentication')) {
+          toast({
+            title: 'Authentication required',
+            description: 'Your session has expired. Please log in again to post a comment.',
+            variant: 'destructive',
+          });
+          return;
+        }
+
+        // Handle other API errors
+        toast({
+          title: 'Error',
+          description: apiError.message || 'Failed to post comment. Please try again.',
+          variant: 'destructive',
         });
       }
-      
-      toast({
-        title: 'Comment added',
-        description: 'Your comment has been posted successfully',
-      });
     } catch (error) {
+      console.error('Unexpected error creating comment:', error);
       toast({
         title: 'Error',
-        description: 'Failed to post comment',
+        description: 'An unexpected error occurred. Please try again.',
         variant: 'destructive',
       });
     }
   };
 
-  const handleReply = (newComment: Comment) => {
-    // Find the parent comment and add the reply
-    setComments(prev => {
-      return prev.map(comment => {
-        if (comment.id === newComment.parentId) {
-          const replies = comment.replies || [];
+  const handleReply = async (newReply: Comment) => {
+    console.log('Handling reply:', newReply);
+
+    // Get the parent comment ID
+    const parentId = newReply.parentId;
+    if (!parentId) {
+      console.error('Reply has no parent ID:', newReply);
+      return;
+    }
+
+    // Find the parent comment (could be a top-level comment or a nested reply)
+    // We need to search recursively through all comments and their replies
+    const findAndUpdateComment = (commentsList: Comment[]): Comment[] => {
+      return commentsList.map(comment => {
+        if (comment.id === parentId) {
+          // This is the parent comment, add the reply
+          const updatedReplies = [...(comment.replies || []), newReply];
           return {
             ...comment,
-            replies: [...replies, newComment]
+            replies: updatedReplies
+          };
+        } else if (comment.replies && comment.replies.length > 0) {
+          // Check if the parent is in the replies
+          return {
+            ...comment,
+            replies: findAndUpdateComment(comment.replies)
           };
         }
         return comment;
       });
-    });
-    
+    };
+
+    // Update the comments state with the new reply
+    const updatedComments = findAndUpdateComment(comments);
+    setComments(updatedComments);
+
     // Update comment count
     if (discussion) {
       setDiscussion({
         ...discussion,
-        commentCount: discussion.commentCount + 1
+        commentCount: (discussion.commentCount || 0) + 1,
+        comment_count: (discussion.comment_count || 0) + 1
       });
     }
   };
@@ -134,7 +273,7 @@ const DiscussionDetailPage = () => {
         if (comment.id === updatedComment.id) {
           return updatedComment;
         } else if (comment.replies) {
-          const updatedReplies = comment.replies.map(reply => 
+          const updatedReplies = comment.replies.map(reply =>
             reply.id === updatedComment.id ? updatedComment : reply
           );
           return { ...comment, replies: updatedReplies };
@@ -145,21 +284,37 @@ const DiscussionDetailPage = () => {
   };
 
   const handleDeleteComment = (commentId: string) => {
+    console.log(`Handling deletion of comment/reply with ID: ${commentId}`);
+
     // First try to find in top-level comments
     let isTopLevel = false;
-    
-    const filteredComments = comments.filter(comment => {
-      if (comment.id === commentId) {
-        isTopLevel = true;
-        return false;
-      }
-      return true;
-    });
-    
-    if (isTopLevel) {
-      setComments(filteredComments);
+    let parentCommentId = null;
+
+    // Check if it's a top-level comment
+    const topLevelComment = comments.find(comment => comment.id === commentId);
+    if (topLevelComment) {
+      isTopLevel = true;
     } else {
-      // Search in replies
+      // Find which comment contains this reply
+      for (const comment of comments) {
+        if (comment.replies && comment.replies.some(reply => reply.id === commentId)) {
+          parentCommentId = comment.id;
+          break;
+        }
+      }
+    }
+
+    console.log(`Comment ${commentId} is ${isTopLevel ? 'top-level' : 'a reply'}`);
+    if (parentCommentId) {
+      console.log(`Parent comment ID: ${parentCommentId}`);
+    }
+
+    // Remove from state
+    if (isTopLevel) {
+      // Filter out the top-level comment
+      setComments(comments.filter(comment => comment.id !== commentId));
+    } else {
+      // Filter out the reply from its parent comment
       const updatedComments = comments.map(comment => {
         if (comment.replies) {
           return {
@@ -169,15 +324,16 @@ const DiscussionDetailPage = () => {
         }
         return comment;
       });
-      
+
       setComments(updatedComments);
     }
-    
+
     // Update comment count
     if (discussion) {
       setDiscussion({
         ...discussion,
-        commentCount: discussion.commentCount - 1
+        commentCount: Math.max(0, (discussion.commentCount || 0) - 1),
+        comment_count: Math.max(0, (discussion.comment_count || 0) - 1)
       });
     }
   };
@@ -188,7 +344,7 @@ const DiscussionDetailPage = () => {
         if (comment.id === id) {
           return { ...comment, upvotes: newUpvotes, hasUpvoted };
         } else if (comment.replies) {
-          const updatedReplies = comment.replies.map(reply => 
+          const updatedReplies = comment.replies.map(reply =>
             reply.id === id ? { ...reply, upvotes: newUpvotes, hasUpvoted } : reply
           );
           return { ...comment, replies: updatedReplies };
@@ -200,20 +356,25 @@ const DiscussionDetailPage = () => {
 
   const handleUpvoteDiscussion = async () => {
     if (!discussion) return;
-    
+
     try {
       const { upvotes, hasUpvoted } = await api.upvoteDiscussion(discussion.id);
-      
+
       setDiscussion({
         ...discussion,
         upvotes,
         hasUpvoted
       });
-      
+
+      // Track upvote event
+      if (hasUpvoted) {
+        analytics.trackUpvote(discussion.id, 'discussion', user?.id);
+      }
+
       toast({
         title: hasUpvoted ? 'Upvoted' : 'Upvote removed',
-        description: hasUpvoted 
-          ? 'You upvoted this discussion' 
+        description: hasUpvoted
+          ? 'You upvoted this discussion'
           : 'You removed your upvote from this discussion',
       });
     } catch (error) {
@@ -227,7 +388,7 @@ const DiscussionDetailPage = () => {
 
   const handleShareDiscussion = () => {
     navigator.clipboard.writeText(window.location.href);
-    
+
     toast({
       title: 'Link copied',
       description: 'Discussion link copied to clipboard',
@@ -251,13 +412,8 @@ const DiscussionDetailPage = () => {
   if (isLoading) {
     return (
       <MainLayout>
-        <div className="space-y-4">
-          <div className="h-8 bg-muted rounded w-1/4 animate-pulse"></div>
-          <div className="h-10 bg-muted rounded w-3/4 animate-pulse"></div>
-          <div className="h-6 bg-muted rounded w-1/2 animate-pulse"></div>
-          <div className="h-4 bg-muted rounded w-full animate-pulse"></div>
-          <div className="h-4 bg-muted rounded w-full animate-pulse"></div>
-          <div className="h-4 bg-muted rounded w-2/3 animate-pulse"></div>
+        <div className="flex justify-center items-center py-20">
+          <LoadingSpinner size="lg" text="Loading discussion..." />
         </div>
       </MainLayout>
     );
@@ -266,17 +422,14 @@ const DiscussionDetailPage = () => {
   if (!discussion) {
     return (
       <MainLayout>
-        <div className="text-center py-12">
-          <h2 className="text-2xl font-bold mb-4">Discussion not found</h2>
-          <p className="text-muted-foreground mb-6">
-            The discussion you're looking for might have been removed or doesn't exist.
-          </p>
-          <Button asChild>
-            <Link to="/discussions">
-              <ChevronLeft className="mr-2 h-4 w-4" /> Back to discussions
-            </Link>
-          </Button>
-        </div>
+        <EmptyState
+          icon={<AlertCircle className="h-12 w-12" />}
+          title="Discussion not found"
+          description="The discussion you're looking for might have been removed or doesn't exist."
+          actionLabel="Back to discussions"
+          onAction={() => window.location.href = '/discussions'}
+          className="py-20"
+        />
       </MainLayout>
     );
   }
@@ -297,7 +450,7 @@ const DiscussionDetailPage = () => {
           <div className="bg-card rounded-lg border p-6">
             <div className="flex justify-between">
               <h1 className="text-2xl font-bold mb-3">{discussion.title}</h1>
-              
+
               <div className="flex items-start space-x-2">
                 <Button
                   variant={discussion.hasUpvoted ? "default" : "outline"}
@@ -311,7 +464,7 @@ const DiscussionDetailPage = () => {
                 >
                   <ArrowUp className="h-4 w-4" />
                 </Button>
-                
+
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -329,17 +482,43 @@ const DiscussionDetailPage = () => {
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
+
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <ReportContentDialog
+                        contentType="discussion"
+                        contentId={discussion.id}
+                        trigger={
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 w-8 rounded-full p-0 text-muted-foreground hover:text-destructive"
+                          >
+                            <Flag className="h-4 w-4" />
+                          </Button>
+                        }
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Report discussion</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
-            
+
             <div className="flex flex-wrap gap-1.5 mb-4">
-              {discussion.tags.map(tag => (
-                <TagBadge key={tag} tag={tag} />
+              {discussion.tags && discussion.tags.map(tag => (
+                <TagBadge
+                  key={typeof tag === 'string' ? tag : tag.name}
+                  tag={typeof tag === 'string' ? tag : tag.name}
+                />
               ))}
             </div>
-            
+
             <p className="text-muted-foreground mb-6">{discussion.content}</p>
-            
+
             {discussion.attachments && discussion.attachments.length > 0 && (
               <div className="mb-6">
                 <h3 className="text-sm font-medium mb-2 flex items-center">
@@ -347,7 +526,7 @@ const DiscussionDetailPage = () => {
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {discussion.attachments.map(attachment => (
-                    <div 
+                    <div
                       key={attachment.id}
                       className="border rounded-md p-3 flex items-center justify-between cursor-pointer hover:bg-muted/50"
                       onClick={() => setSelectedAttachment(attachment)}
@@ -361,8 +540,8 @@ const DiscussionDetailPage = () => {
                           </p>
                         </div>
                       </div>
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="sm"
                         className="h-7"
                       >
@@ -373,7 +552,7 @@ const DiscussionDetailPage = () => {
                 </div>
               </div>
             )}
-            
+
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center">
                 <UserAvatar user={discussion.author} size="sm" showName />
@@ -381,7 +560,7 @@ const DiscussionDetailPage = () => {
                   Posted {formatDistanceToNow(discussion.createdAt, { addSuffix: true })}
                 </span>
               </div>
-              
+
               <div className="flex items-center">
                 <div className="flex items-center text-muted-foreground">
                   <ArrowUp className="mr-1 h-4 w-4" />
@@ -397,27 +576,47 @@ const DiscussionDetailPage = () => {
 
           {/* Comments Section */}
           <div className="bg-card rounded-lg border p-6">
-            <h2 className="text-xl font-bold mb-6">Comments ({discussion.commentCount})</h2>
-            
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold">
+                Comments ({discussion.commentCount})
+                {/* Debug info */}
+                <span className="text-xs text-muted-foreground ml-2">
+                  (Loaded: {comments ? comments.length : 0})
+                </span>
+              </h2>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => loadComments(id || '')}
+                className="flex items-center"
+              >
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Refresh
+              </Button>
+            </div>
+
             <div className="mb-6">
               <CommentForm onSubmit={handleSubmitComment} />
             </div>
-            
+
             <Separator className="my-6" />
-            
-            {comments.length === 0 ? (
-              <div className="text-center py-8">
-                <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground mb-3 opacity-40" />
-                <h3 className="text-lg font-medium mb-1">No comments yet</h3>
-                <p className="text-muted-foreground">Be the first to comment on this discussion</p>
-              </div>
-            ) : (
+
+            {/* Debug info */}
+            <div className="text-xs text-muted-foreground mb-4 p-2 bg-muted/30 rounded">
+              Debug: Comments array is {comments ? `defined with length ${comments.length}` : 'undefined'}.
+              Discussion has {discussion.commentCount} comments according to the database.
+            </div>
+
+            {comments && comments.length > 0 ? (
               <div className="space-y-6">
                 {comments.map(comment => (
-                  <CommentCard 
-                    key={comment.id} 
+                  <CommentCard
+                    key={comment.id}
                     comment={comment}
                     discussionId={discussion.id}
+                    isDiscussionCreator={user?.id === discussion.author.id}
                     onReply={handleReply}
                     onUpdate={handleUpdateComment}
                     onDelete={handleDeleteComment}
@@ -425,6 +624,13 @@ const DiscussionDetailPage = () => {
                   />
                 ))}
               </div>
+            ) : (
+              <EmptyState
+                icon={<MessageSquare className="h-12 w-12" />}
+                title="No comments yet"
+                description="Be the first to comment on this discussion"
+                className="py-8"
+              />
             )}
           </div>
         </div>
@@ -450,7 +656,7 @@ const DiscussionDetailPage = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-card rounded-lg border p-4">
             <h3 className="font-medium mb-4">About the Author</h3>
             <div className="flex flex-col items-center text-center">
@@ -460,9 +666,9 @@ const DiscussionDetailPage = () => {
               {discussion.author.bio && (
                 <p className="text-sm">{discussion.author.bio}</p>
               )}
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 className="mt-3 w-full"
                 asChild
               >
@@ -472,12 +678,15 @@ const DiscussionDetailPage = () => {
               </Button>
             </div>
           </div>
-          
+
           <div className="bg-card rounded-lg border p-4">
             <h3 className="font-medium mb-4">Related Tags</h3>
             <div className="flex flex-wrap gap-2">
-              {discussion.tags.map(tag => (
-                <TagBadge key={tag} tag={tag} />
+              {discussion.tags && discussion.tags.map(tag => (
+                <TagBadge
+                  key={typeof tag === 'string' ? tag : tag.name}
+                  tag={typeof tag === 'string' ? tag : tag.name}
+                />
               ))}
             </div>
           </div>
@@ -494,11 +703,11 @@ const DiscussionDetailPage = () => {
                 {selectedAttachment.name}
               </DialogTitle>
             </DialogHeader>
-            
+
             <div className="py-4">
               {selectedAttachment.type.startsWith('image/') ? (
-                <img 
-                  src={selectedAttachment.url} 
+                <img
+                  src={selectedAttachment.url}
                   alt={selectedAttachment.name}
                   className="max-h-[70vh] mx-auto object-contain rounded-md"
                 />
@@ -510,8 +719,8 @@ const DiscussionDetailPage = () => {
                     {getFileType(selectedAttachment.type)} • {formatFileSize(selectedAttachment.size)}
                   </p>
                   <Button asChild>
-                    <a 
-                      href={selectedAttachment.url} 
+                    <a
+                      href={selectedAttachment.url}
                       download={selectedAttachment.name}
                       target="_blank"
                       rel="noopener noreferrer"
