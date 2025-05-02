@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Registration</title>
+</head>
+<body>
+    <h1>Test Registration</h1>
+    <button id="testButton">Test Direct Registration</button>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('testButton').addEventListener('click', async () => {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const testEmail = `test${Date.now()}@example.com`;
+                const testUsername = `testuser${Date.now()}`;
+                
+                resultDiv.innerHTML += `<p>Using ${testEmail} and ${testUsername}</p>`;
+                
+                const response = await fetch('http://localhost:8000/api/auth/register/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: testUsername,
+                        email: testEmail,
+                        password: 'Password123',
+                        first_name: 'Test',
+                        last_name: 'User'
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Direct registration test successful:', data);
+                    resultDiv.innerHTML += `<p style="color: green;">Registration successful!</p>`;
+                    resultDiv.innerHTML += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    const errorData = await response.json();
+                    console.error('Direct registration test failed:', errorData);
+                    resultDiv.innerHTML += `<p style="color: red;">Registration failed!</p>`;
+                    resultDiv.innerHTML += `<pre>${JSON.stringify(errorData, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                console.error('Direct registration test error:', error);
+                resultDiv.innerHTML += `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
