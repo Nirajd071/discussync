@@ -170,7 +170,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ---
 
 <div align="center">
-  <p>Made with ❤️ by <a href="https://github.com/Nirajd071">Niraj Deshmukh</a></p>
+  <p>Made with ❤️ by <a href="https://github.com/Nirajd071">Niraj Das</a></p>
 
   <a href="https://github.com/Nirajd071">
     <img src="https://img.shields.io/github/followers/Nirajd071?label=Follow&style=social" alt="GitHub followers" />
