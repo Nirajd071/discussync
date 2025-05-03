@@ -31,19 +31,35 @@ async def get_projects(
         # Get author
         author = db.query(models.User).filter(models.User.id == project.author_id).first()
 
-        # Format author data
-        author_data = {
-            "id": author.id,
-            "username": author.username,
-            "email": author.email,
-            "name": f"{author.first_name or ''} {author.last_name or ''}".strip(),
-            "first_name": author.first_name,
-            "last_name": author.last_name,
-            "bio": author.bio,
-            "avatar": author.avatar,
-            "is_admin": author.is_admin,
-            "created_at": author.created_at.isoformat() if author.created_at else None
-        }
+        # Handle case where author might be None
+        if author:
+            # Format author data
+            author_data = {
+                "id": author.id,
+                "username": author.username,
+                "email": author.email,
+                "name": f"{author.first_name or ''} {author.last_name or ''}".strip(),
+                "first_name": author.first_name,
+                "last_name": author.last_name,
+                "bio": author.bio,
+                "avatar": author.avatar,
+                "is_admin": author.is_admin,
+                "created_at": author.created_at.isoformat() if author.created_at else None
+            }
+        else:
+            # Provide default author data if author is None
+            author_data = {
+                "id": "deleted",
+                "username": "deleted_user",
+                "email": "",
+                "name": "Deleted User",
+                "first_name": "Deleted",
+                "last_name": "User",
+                "bio": None,
+                "avatar": None,
+                "is_admin": False,
+                "created_at": None
+            }
 
         # Format project data
         project_data = {
@@ -85,19 +101,35 @@ async def get_project(
     # Get author
     author = db.query(models.User).filter(models.User.id == project.author_id).first()
 
-    # Format author data
-    author_data = {
-        "id": author.id,
-        "username": author.username,
-        "email": author.email,
-        "name": f"{author.first_name or ''} {author.last_name or ''}".strip(),
-        "first_name": author.first_name,
-        "last_name": author.last_name,
-        "bio": author.bio,
-        "avatar": author.avatar,
-        "is_admin": author.is_admin,
-        "created_at": author.created_at.isoformat() if author.created_at else None
-    }
+    # Handle case where author might be None
+    if author:
+        # Format author data
+        author_data = {
+            "id": author.id,
+            "username": author.username,
+            "email": author.email,
+            "name": f"{author.first_name or ''} {author.last_name or ''}".strip(),
+            "first_name": author.first_name,
+            "last_name": author.last_name,
+            "bio": author.bio,
+            "avatar": author.avatar,
+            "is_admin": author.is_admin,
+            "created_at": author.created_at.isoformat() if author.created_at else None
+        }
+    else:
+        # Provide default author data if author is None
+        author_data = {
+            "id": "deleted",
+            "username": "deleted_user",
+            "email": "",
+            "name": "Deleted User",
+            "first_name": "Deleted",
+            "last_name": "User",
+            "bio": None,
+            "avatar": None,
+            "is_admin": False,
+            "created_at": None
+        }
 
     # Check if user has upvoted this project
     has_upvoted = False

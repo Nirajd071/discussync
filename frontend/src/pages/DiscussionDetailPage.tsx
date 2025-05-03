@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { formatDistanceToNow } from 'date-fns';
+import { formatRelativeTime, formatDateTime } from '@/utils/dateUtils';
 import {
   ChevronLeft,
   ArrowUp,
@@ -354,12 +354,31 @@ const DiscussionDetailPage = () => {
     });
   };
 
+  const [isUpvoting, setIsUpvoting] = useState(false);
+
   const handleUpvoteDiscussion = async () => {
     if (!discussion) return;
 
+    // Prevent multiple rapid clicks
+    if (isUpvoting) return;
+
     try {
+      setIsUpvoting(true);
+
+      // Optimistically update UI
+      const newHasUpvoted = !discussion.hasUpvoted;
+      const newUpvoteCount = discussion.hasUpvoted ? (discussion.upvotes || 0) - 1 : (discussion.upvotes || 0) + 1;
+
+      setDiscussion({
+        ...discussion,
+        upvotes: newUpvoteCount,
+        hasUpvoted: newHasUpvoted
+      });
+
+      // Make API call
       const { upvotes, hasUpvoted } = await api.upvoteDiscussion(discussion.id);
 
+      // Update with actual server response
       setDiscussion({
         ...discussion,
         upvotes,
@@ -378,11 +397,14 @@ const DiscussionDetailPage = () => {
           : 'You removed your upvote from this discussion',
       });
     } catch (error) {
+      // Revert to original state on error
       toast({
         title: 'Error',
         description: 'Failed to update upvote',
         variant: 'destructive',
       });
+    } finally {
+      setIsUpvoting(false);
     }
   };
 
@@ -461,8 +483,9 @@ const DiscussionDetailPage = () => {
                       : "hover:bg-muted"
                   }`}
                   onClick={handleUpvoteDiscussion}
+                  disabled={isUpvoting}
                 >
-                  <ArrowUp className="h-4 w-4" />
+                  <ArrowUp className={`h-4 w-4 ${isUpvoting ? 'animate-pulse' : ''}`} />
                 </Button>
 
                 <TooltipProvider>
@@ -557,7 +580,7 @@ const DiscussionDetailPage = () => {
               <div className="flex items-center">
                 <UserAvatar user={discussion.author} size="sm" showName />
                 <span className="text-xs text-muted-foreground ml-2">
-                  Posted {formatDistanceToNow(discussion.createdAt, { addSuffix: true })}
+                  Posted {formatRelativeTime(discussion.createdAt || discussion.created_at)}
                 </span>
               </div>
 
@@ -643,7 +666,7 @@ const DiscussionDetailPage = () => {
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Posted</span>
                 <span className="text-sm font-medium">
-                  {formatDistanceToNow(discussion.createdAt, { addSuffix: true })}
+                  {formatDateTime(discussion.createdAt || discussion.created_at)}
                 </span>
               </div>
               <div className="flex justify-between items-center">

@@ -1,7 +1,6 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { formatDistanceToNow } from 'date-fns';
 import { ArrowUp, MessageSquare, Paperclip, Trash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -11,6 +10,7 @@ import TagBadge from './TagBadge';
 import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { formatRelativeTime } from '@/utils/dateUtils';
 
 interface DiscussionCardProps {
   discussion: Discussion;
@@ -29,21 +29,50 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
   const { user } = useAuth();
   const isAuthor = user?.id === discussion.author.id;
 
+  // Track local upvote state for immediate feedback
+  const [isUpvoting, setIsUpvoting] = useState(false);
+  const [localUpvoteCount, setLocalUpvoteCount] = useState(discussion.upvote_count || discussion.upvotes || 0);
+  const [localHasUpvoted, setLocalHasUpvoted] = useState(discussion.hasUpvoted || discussion.has_upvoted || false);
+
   const handleUpvote = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
+    // Prevent multiple rapid clicks
+    if (isUpvoting) return;
+
     try {
+      setIsUpvoting(true);
+
+      // Optimistically update UI
+      const newHasUpvoted = !localHasUpvoted;
+      const newUpvoteCount = localHasUpvoted ? localUpvoteCount - 1 : localUpvoteCount + 1;
+
+      setLocalHasUpvoted(newHasUpvoted);
+      setLocalUpvoteCount(newUpvoteCount);
+
+      // Make API call
       const { upvotes, hasUpvoted } = await api.upvoteDiscussion(discussion.id);
+
+      // Update with actual server response
+      setLocalUpvoteCount(upvotes);
+      setLocalHasUpvoted(hasUpvoted);
+
       if (onUpvote) {
         onUpvote(discussion.id, upvotes, hasUpvoted);
       }
     } catch (error) {
+      // Revert to original state on error
+      setLocalHasUpvoted(discussion.hasUpvoted || discussion.has_upvoted || false);
+      setLocalUpvoteCount(discussion.upvote_count || discussion.upvotes || 0);
+
       toast({
         title: 'Error',
         description: 'Failed to upvote discussion',
         variant: 'destructive',
       });
+    } finally {
+      setIsUpvoting(false);
     }
   };
 
@@ -82,18 +111,19 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
 
             <div className="flex flex-col items-center space-y-1">
               <Button
-                variant={(discussion.hasUpvoted || discussion.has_upvoted) ? "default" : "outline"}
+                variant={localHasUpvoted ? "default" : "outline"}
                 size="icon"
                 className={`h-8 w-8 rounded-full ${
-                  (discussion.hasUpvoted || discussion.has_upvoted)
+                  localHasUpvoted
                     ? "bg-forum-primary hover:bg-forum-primary/90"
                     : "hover:bg-muted"
                 }`}
                 onClick={handleUpvote}
+                disabled={isUpvoting}
               >
-                <ArrowUp className="h-4 w-4" />
+                <ArrowUp className={`h-4 w-4 ${isUpvoting ? 'animate-pulse' : ''}`} />
               </Button>
-              <span className="text-xs font-medium">{discussion.upvote_count || 0}</span>
+              <span className="text-xs font-medium">{localUpvoteCount}</span>
             </div>
           </div>
         </CardContent>
@@ -115,7 +145,7 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
             </Link>
             <span className="text-xs"> · </span>
             <span className="text-xs">
-              {formatDistanceToNow(discussion.createdAt ? discussion.createdAt : new Date(discussion.created_at || ''), { addSuffix: true })}
+              {formatRelativeTime(discussion.createdAt || discussion.created_at)}
             </span>
           </span>
         </div>

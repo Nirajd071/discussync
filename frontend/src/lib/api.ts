@@ -10,7 +10,7 @@ import {
 
 // API Configuration
 // Force using the local backend server URL
-const API_BASE_URL = 'http://localhost:8005/api';
+const API_BASE_URL = 'http://localhost:8004/api';
 console.log('Using API base URL:', API_BASE_URL);
 
 // Helper function for making API requests
@@ -134,7 +134,7 @@ async function apiRequest<T>(
 // API service
 export const api = {
   // Auth
-  async login(email: string, password: string): Promise<User> {
+  async login(email: string, password: string): Promise<any> {
     console.log('API: Sending login request with data:', { email, password });
     try {
       // First try the JSON endpoint
@@ -149,7 +149,8 @@ export const api = {
         const config: RequestInit = {
           method: 'POST',
           headers,
-          body: JSON.stringify({ email, password })
+          body: JSON.stringify({ email, password }),
+          credentials: 'include' // Include cookies for session authentication
         };
 
         console.log('API: Login config (JSON):', { method: 'POST', headers });
@@ -161,8 +162,8 @@ export const api = {
           const data = await response.json();
           console.log('API: Login response data (JSON):', data);
 
-          localStorage.setItem('auth_token', data.token);
-          return data.user;
+          // Return the full response with token and user
+          return data;
         } else {
           console.log('JSON login failed, trying form-based login');
         }
@@ -186,7 +187,8 @@ export const api = {
       const config: RequestInit = {
         method: 'POST',
         headers,
-        body: formData
+        body: formData,
+        credentials: 'include' // Include cookies for session authentication
       };
 
       console.log('API: Login config (form):', { method: 'POST', headers });
@@ -208,15 +210,15 @@ export const api = {
       const data = await response.json();
       console.log('API: Login response data (form):', data);
 
-      localStorage.setItem('auth_token', data.token);
-      return data.user;
+      // Return the full response with token and user
+      return data;
     } catch (error) {
       console.error('API: Login request failed:', error);
       throw error;
     }
   },
 
-  async register(userData: any): Promise<User> {
+  async register(userData: any): Promise<any> {
     console.log('API: Sending registration request with data:', userData);
     try {
       // Use fetch directly instead of going through the helper function
@@ -230,8 +232,7 @@ export const api = {
       const config: RequestInit = {
         method: 'POST',
         headers,
-        // Don't include credentials for now
-        // credentials: 'include',
+        credentials: 'include', // Include cookies for session authentication
         body: JSON.stringify(userData)
       };
 
@@ -254,8 +255,8 @@ export const api = {
       const data = await response.json();
       console.log('API: Registration response data:', data);
 
-      localStorage.setItem('auth_token', data.token);
-      return data.user;
+      // Return the full response with token and user
+      return data;
     } catch (error) {
       console.error('API: Registration request failed:', error);
       throw error;
@@ -315,9 +316,18 @@ export const api = {
         throw new Error('Authentication required to create a discussion. Please log in.');
       }
 
+      // Process attachments - extract just the IDs for the backend
+      let processedData: any = { ...data };
+      if (data.attachments && Array.isArray(data.attachments)) {
+        console.log(`Processing ${data.attachments.length} attachments for discussion creation`);
+        // Extract just the IDs from the attachment objects
+        processedData.attachments = data.attachments.map(attachment => attachment.id);
+        console.log('Processed attachment IDs:', processedData.attachments);
+      }
+
       // Make the API request
       try {
-        const result = await apiRequest<Discussion>('/discussions/', 'POST', data);
+        const result = await apiRequest<Discussion>('/discussions/', 'POST', processedData);
         console.log('Discussion created successfully:', result);
         return result;
       } catch (apiError) {

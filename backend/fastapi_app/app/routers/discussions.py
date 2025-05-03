@@ -132,30 +132,60 @@ async def create_discussion(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    # Create the discussion
-    db_discussion = models.Discussion(
-        title=discussion_create.title,
-        content=discussion_create.content,
-        author_id=current_user.id
-    )
-    db.add(db_discussion)
-    db.commit()
-    db.refresh(db_discussion)
+    try:
+        print(f"Creating discussion with title: {discussion_create.title}")
+        print(f"Tags: {discussion_create.tags}")
+        print(f"Attachments: {discussion_create.attachments}")
 
-    # Add tags
-    if discussion_create.tags:
-        for tag_name in discussion_create.tags:
-            tag = db.query(models.Tag).filter(models.Tag.name == tag_name).first()
-            if not tag:
-                tag = models.Tag(name=tag_name)
-                db.add(tag)
-                db.commit()
-                db.refresh(tag)
-            db_discussion.tags.append(tag)
+        # Create the discussion
+        db_discussion = models.Discussion(
+            title=discussion_create.title,
+            content=discussion_create.content,
+            author_id=current_user.id
+        )
+        db.add(db_discussion)
         db.commit()
+        db.refresh(db_discussion)
+        print(f"Created discussion with ID: {db_discussion.id}")
 
-    # Refresh to get all relationships
-    db.refresh(db_discussion)
+        # Add tags
+        if discussion_create.tags:
+            for tag_name in discussion_create.tags:
+                tag = db.query(models.Tag).filter(models.Tag.name == tag_name).first()
+                if not tag:
+                    tag = models.Tag(name=tag_name)
+                    db.add(tag)
+                    db.commit()
+                    db.refresh(tag)
+                db_discussion.tags.append(tag)
+            db.commit()
+            print(f"Added {len(discussion_create.tags)} tags to discussion")
+
+        # Add attachments
+        if discussion_create.attachments:
+            print(f"Processing {len(discussion_create.attachments)} attachments")
+            for attachment_id in discussion_create.attachments:
+                # Find the attachment by ID
+                attachment = db.query(models.Attachment).filter(models.Attachment.id == attachment_id).first()
+                if attachment:
+                    print(f"Found attachment: {attachment.name}")
+                    # Update the attachment to link it to this discussion
+                    attachment.discussion_id = db_discussion.id
+                    db.commit()
+                    print(f"Linked attachment {attachment.id} to discussion {db_discussion.id}")
+                else:
+                    print(f"Warning: Attachment with ID {attachment_id} not found")
+
+            # Commit all attachment changes
+            db.commit()
+            print(f"Processed attachments for discussion {db_discussion.id}")
+
+        # Refresh to get all relationships
+        db.refresh(db_discussion)
+    except Exception as e:
+        print(f"Error creating discussion: {str(e)}")
+        db.rollback()
+        raise
 
     # Format author data
     author_data = {

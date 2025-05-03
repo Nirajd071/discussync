@@ -9,10 +9,10 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (userData: any) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
+  register: (userData: any) => Promise<User>;
   logout: () => void;
-  updateUserProfile: (userData: Partial<User>) => Promise<void>;
+  updateUserProfile: (userData: Partial<User>) => Promise<User>;
   token: string | null;
 }
 
@@ -95,8 +95,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
-      const loggedInUser = await api.login(email, password);
+      console.log('AuthContext: Attempting login with email:', email);
+
+      // Call the login API
+      const response = await api.login(email, password);
+
+      console.log('AuthContext: Login response:', response);
+
+      // Extract user and token from response
+      const { user: loggedInUser, token: authToken } = response;
+
+      // Set user and token in state
       setUser(loggedInUser);
+      setToken(authToken);
+
+      // Store token in localStorage
+      localStorage.setItem('auth_token', authToken);
+      console.log('AuthContext: Login successful, token stored');
 
       // Track login event
       analytics.trackLogin(loggedInUser.id);
@@ -105,7 +120,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: 'Welcome back!',
         description: `You're now logged in as ${loggedInUser.name}`,
       });
+
+      return loggedInUser;
     } catch (error) {
+      console.error('AuthContext: Login failed:', error);
       toast({
         title: 'Login failed',
         description: error instanceof Error ? error.message : 'An error occurred',
@@ -121,13 +139,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setIsLoading(true);
       console.log('AuthContext: Registering user with data:', userData);
-      const newUser = await api.register(userData);
-      console.log('AuthContext: Registration successful, user:', newUser);
-      setUser(newUser);
 
-      // Set token from localStorage
-      const token = localStorage.getItem('auth_token');
-      setToken(token);
+      // Call the register API
+      const response = await api.register(userData);
+
+      // Extract user and token from response
+      const { user: newUser, token: authToken } = response;
+
+      console.log('AuthContext: Registration successful, user:', newUser);
+
+      // Set user and token in state
+      setUser(newUser);
+      setToken(authToken);
+
+      // Store token in localStorage
+      localStorage.setItem('auth_token', authToken);
+      console.log('AuthContext: Registration successful, token stored');
 
       // Track registration event
       analytics.trackRegister(newUser.id);
@@ -136,6 +163,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: 'Registration successful',
         description: `Welcome to the forum, ${newUser.name}!`,
       });
+
+      return newUser;
     } catch (error) {
       console.error('AuthContext: Registration error:', error);
       toast({

@@ -59,7 +59,7 @@ class TagCreate(TagBase):
     pass
 
 class DiscussionCreate(DiscussionBase):
-    pass
+    attachments: Optional[List[str]] = []
 
 class CommentCreate(CommentBase):
     pass
@@ -112,6 +112,12 @@ class User(BaseModel):
     joinedAt: Optional[str] = None
     isAdmin: Optional[bool] = None  # Duplicate of is_admin for frontend compatibility
 
+    @validator('created_at', pre=True, always=True)
+    def format_created_at(cls, v):
+        if isinstance(v, datetime):
+            return v.isoformat()
+        return v
+
     @validator('joinedAt', pre=True, always=True)
     def set_joined_at(cls, v, values):
         return values.get('created_at')
@@ -161,6 +167,18 @@ class Comment(CommentBase):
     parentId: Optional[str] = None  # Legacy field for frontend compatibility
     mentionedUsers: Optional[List[str]] = None  # Legacy field for frontend compatibility
 
+    @validator('created_at', pre=True, always=True)
+    def format_created_at(cls, v):
+        if isinstance(v, datetime):
+            return v.isoformat()
+        return v
+
+    @validator('updated_at', pre=True, always=True)
+    def format_updated_at(cls, v):
+        if isinstance(v, datetime):
+            return v.isoformat()
+        return v
+
     @validator('createdAt', pre=True, always=True)
     def set_created_at(cls, v, values):
         return values.get('created_at')
@@ -191,6 +209,12 @@ class Attachment(AttachmentBase):
     uploaded_at: str
     uploadedAt: Optional[str] = None  # Legacy field for frontend compatibility
 
+    @validator('uploaded_at', pre=True, always=True)
+    def format_uploaded_at(cls, v):
+        if isinstance(v, datetime):
+            return v.isoformat()
+        return v
+
     @validator('uploadedAt', pre=True, always=True)
     def set_uploaded_at(cls, v, values):
         return values.get('uploaded_at')
@@ -216,6 +240,18 @@ class Discussion(BaseModel):
     has_upvoted: bool = False
     hasUpvoted: Optional[bool] = None  # Legacy field for frontend compatibility
     attachments: List[Attachment] = []
+
+    @validator('created_at', pre=True, always=True)
+    def format_created_at(cls, v):
+        if isinstance(v, datetime):
+            return v.isoformat()
+        return v
+
+    @validator('updated_at', pre=True, always=True)
+    def format_updated_at(cls, v):
+        if isinstance(v, datetime):
+            return v.isoformat()
+        return v
 
     @validator('createdAt', pre=True, always=True)
     def set_created_at(cls, v, values):
@@ -249,6 +285,12 @@ class Notification(NotificationBase):
     from_legacy: Optional[User] = Field(None, alias="from")  # Legacy field for frontend compatibility
     link: Optional[str] = None
     isRead: Optional[bool] = None  # Legacy field for frontend compatibility
+
+    @validator('created_at', pre=True, always=True)
+    def format_created_at(cls, v):
+        if isinstance(v, datetime):
+            return v.isoformat()
+        return v
 
     @validator('createdAt', pre=True, always=True)
     def set_created_at(cls, v, values):

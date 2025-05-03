@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { formatDistanceToNow } from 'date-fns';
 import { ArrowUp, Reply, Edit, Trash, Flag } from 'lucide-react';
+import { formatRelativeTime } from '@/utils/dateUtils';
 import { Button } from '@/components/ui/button';
 import { Comment } from '@/types';
 import UserAvatar from './UserAvatar';
@@ -40,8 +40,24 @@ const CommentCard: React.FC<CommentCardProps> = ({
   const canDelete = isAuthor || isDiscussionCreator;
   const maxLevel = 3; // Maximum nesting level
 
+  const [isUpvoting, setIsUpvoting] = useState(false);
+  const [localUpvoteCount, setLocalUpvoteCount] = useState(comment.upvotes || 0);
+  const [localHasUpvoted, setLocalHasUpvoted] = useState(comment.hasUpvoted || false);
+
   const handleUpvote = async () => {
+    // Prevent multiple rapid clicks
+    if (isUpvoting) return;
+
     try {
+      setIsUpvoting(true);
+
+      // Optimistically update UI
+      const newHasUpvoted = !localHasUpvoted;
+      const newUpvoteCount = localHasUpvoted ? localUpvoteCount - 1 : localUpvoteCount + 1;
+
+      setLocalHasUpvoted(newHasUpvoted);
+      setLocalUpvoteCount(newUpvoteCount);
+
       console.log(`Handling upvote for comment/reply with ID: ${comment.id}`);
 
       let upvoteResult;
@@ -59,6 +75,10 @@ const CommentCard: React.FC<CommentCardProps> = ({
 
       const { upvotes, hasUpvoted } = upvoteResult;
 
+      // Update with actual server response
+      setLocalUpvoteCount(upvotes);
+      setLocalHasUpvoted(hasUpvoted);
+
       if (onUpvote) {
         onUpvote(comment.id, upvotes, hasUpvoted);
       }
@@ -71,12 +91,18 @@ const CommentCard: React.FC<CommentCardProps> = ({
         variant: 'default',
       });
     } catch (error) {
+      // Revert to original state on error
+      setLocalHasUpvoted(comment.hasUpvoted || false);
+      setLocalUpvoteCount(comment.upvotes || 0);
+
       console.error('Error upvoting comment/reply:', error);
       toast({
         title: 'Error',
         description: error.message || `Failed to upvote ${comment.parentId ? 'reply' : 'comment'}`,
         variant: 'destructive',
       });
+    } finally {
+      setIsUpvoting(false);
     }
   };
 
@@ -222,7 +248,7 @@ const CommentCard: React.FC<CommentCardProps> = ({
               <span className="text-xs text-muted-foreground ml-1">@{comment.author.username}</span>
               <span className="text-xs text-muted-foreground mx-1">•</span>
               <span className="text-xs text-muted-foreground">
-                {formatDistanceToNow(comment.createdAt, { addSuffix: true })}
+                {formatRelativeTime(comment.createdAt || comment.created_at)}
               </span>
               {comment.updatedAt && (
                 <span className="text-xs text-muted-foreground ml-1">(edited)</span>
@@ -252,18 +278,19 @@ const CommentCard: React.FC<CommentCardProps> = ({
 
           <div className="flex flex-col items-center space-y-1 ml-2">
             <Button
-              variant={comment.hasUpvoted ? "default" : "outline"}
+              variant={localHasUpvoted ? "default" : "outline"}
               size="icon"
               className={`h-7 w-7 rounded-full ${
-                comment.hasUpvoted
+                localHasUpvoted
                   ? "bg-forum-primary hover:bg-forum-primary/90"
                   : "hover:bg-muted"
               }`}
               onClick={handleUpvote}
+              disabled={isUpvoting}
             >
-              <ArrowUp className="h-3 w-3" />
+              <ArrowUp className={`h-3 w-3 ${isUpvoting ? 'animate-pulse' : ''}`} />
             </Button>
-            <span className="text-xs font-medium">{comment.upvotes}</span>
+            <span className="text-xs font-medium">{localUpvoteCount}</span>
           </div>
         </div>
 

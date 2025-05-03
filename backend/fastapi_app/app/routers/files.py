@@ -100,6 +100,10 @@ async def upload_file(
         # Set URL for response
         db_attachment.url = db_attachment.file_path
 
+        # Convert datetime to string for response
+        if hasattr(db_attachment, 'uploaded_at') and db_attachment.uploaded_at:
+            db_attachment.uploaded_at = db_attachment.uploaded_at.isoformat()
+
         return db_attachment
     except HTTPException:
         # Re-raise HTTP exceptions
